@@ -2,7 +2,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getTodos, createTodo, updateTodo, deleteTodo } from "@/actions/exampleBackend";
+import { getTodos, createTodo, updateTodo, deleteTodo } from "../api/exampleBackend";
 import styles from "./page.module.css";
 
 export default function Page() {
