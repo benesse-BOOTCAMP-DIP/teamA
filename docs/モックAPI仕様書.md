@@ -1,28 +1,92 @@
-# 英単語翻訳モック API (`translate.ts`) 利用ガイド
+# モック API 仕様書・利用ガイド
 
-フロントエンド開発で英単語の翻訳（訳候補取得）機能を利用・検証するためのモック API (`translate.ts`) が作成されました。  
-フロントエンド実装時は以下の仕様に沿って連携してください。
-
----
-
-## 📌 概要・利用方法
-
-利用方法は以下の **2通り** あります。
-
-1. **HTTP リクエスト (標準の `fetch` 呼び出し)**  
-   クライアントコンポーネントや通常の API 通信で使用します。
-2. **TypeScript 関数の直接呼び出し**  
-   Server Component や Server Actions から直接呼ぶ場合に使用できます。
+フロントエンド開発で利用する各種モック API の仕様書です。
 
 ---
 
-## 1. HTTP リクエスト仕様
+## 📚 1. ストーリー・単語一覧取得 API
+
+ストーリーおよび単語リストのモックデータを取得する API です。
+
+### 📌 基本情報
+
+- **エンドポイント**: `/api/mocks`
+- **HTTP メソッド**: `GET`
+
+### 📤 レスポンス仕様 (JSON)
+
+```json
+{
+  "stories": [
+    {
+      "id": 1,
+      "title": "魚とラーメン",
+      "content": "Ken has a fish. He likes ramen very much."
+    }
+  ],
+  "words": [
+    {
+      "id": 1,
+      "english": "fish",
+      "japanese": "魚"
+    },
+    {
+      "id": 2,
+      "english": "ramen",
+      "japanese": "ラーメン"
+    }
+  ]
+}
+```
+
+### 📐 TypeScript 型定義 (`@/app/api/mocks/route`)
+
+```typescript
+export interface Story {
+  id: number;
+  title: string;
+  content: string;
+}
+
+export interface Word {
+  id: number;
+  english: string;
+  japanese: string;
+}
+
+export interface MocksResponse {
+  stories: Story[];
+  words: Word[];
+}
+```
+
+### 💻 フロントエンド実装コード例 (`fetch`)
+
+```typescript
+import type { MocksResponse } from "@/app/api/mocks/route";
+
+async function getMockData(): Promise<MocksResponse> {
+  const res = await fetch("/api/mocks");
+  if (!res.ok) {
+    throw new Error("モックデータの取得に失敗しました");
+  }
+  return res.json();
+}
+```
+
+---
+
+## 🔤 2. 英単語翻訳（訳候補取得） API
+
+英単語の配列を受け取り、各単語の日本語訳候補を返す API です。
+
+### 📌 基本情報
 
 - **エンドポイント**: `/api/mocks/words/translate`
 - **HTTP メソッド**: `POST`
 - **リクエストヘッダー**: `Content-Type: application/json`
 
-### 📥 リクエストデータ (JSON)
+### 📥 リクエスト仕様 (JSON)
 
 ```json
 {
@@ -36,7 +100,7 @@ export interface TranslateRequest {
 }
 ```
 
-### 📤 レスポンスデータ (JSON)
+### 📤 レスポンス仕様 (JSON)
 
 ```json
 {
@@ -68,12 +132,7 @@ export interface TranslateResponse {
 }
 ```
 
----
-
-## 2. モック辞書データ & 動作仕様
-
 ### 📖 登録済み単語一覧（テスト用）
-以下の英単語は複数の訳候補が登録されています。
 
 | 英単語 | 返される訳候補 (`options`) |
 | :--- | :--- |
@@ -92,86 +151,26 @@ export interface TranslateResponse {
 | `watch` | `["見る", "腕時計", "警戒する"]` |
 | `set` | `["セット", "配置する", "沈む"]` |
 
-### ❓ 未登録の単語を入力した場合
-辞書に登録されていない英単語が渡された場合は、`options` に `["辞書に登録されていません"]` が返されます。
+* ※ 辞書に登録されていない英単語が渡された場合は、`options` に `["辞書に登録されていません"]` が返されます。
 
----
-
-## 💻 フロントエンド実装サンプル
-
-### A. `fetch` を使用した API 通信例 (React / Next.js Client Component)
+### 💻 フロントエンド実装コード例 (`fetch`)
 
 ```typescript
-import { useState } from "react";
-import type { TranslateResponse } from "@/app/api/mocks/words/translate";
+import type { TranslateRequest, TranslateResponse } from "@/app/api/mocks/words/translate/route";
 
-export function WordTranslator() {
-  const [translations, setTranslations] = useState<TranslateResponse["translations"]>([]);
-  const [loading, setLoading] = useState(false);
+async function fetchTranslations(words: string[]): Promise<TranslateResponse> {
+  const response = await fetch("/api/mocks/words/translate", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ words } satisfies TranslateRequest),
+  });
 
-  const handleTranslate = async (wordList: string[]) => {
-    setLoading(true);
-    try {
-      const response = await fetch("/api/mocks/words/translate", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ words: wordList }),
-      });
+  if (!response.ok) {
+    throw new Error("翻訳リクエストに失敗しました");
+  }
 
-      if (!response.ok) {
-        throw new Error("翻訳リクエストに失敗しました");
-      }
-
-      const data: TranslateResponse = await response.json();
-      setTranslations(data.translations);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <div>
-      <button onClick={() => handleTranslate(["spring", "apple", "banana"])}>
-        翻訳実行
-      </button>
-      {loading ? (
-        <p>読み込み中...</p>
-      ) : (
-        <ul>
-          {translations.map((item) => (
-            <li key={item.english}>
-              <strong>{item.english}</strong>: {item.options.join(", ")}
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
-  );
-}
-```
-
-### B. TypeScript 関数を直接インポートして使用する例 (Server Component / Action)
-
-```typescript
-import { translateWords } from "@/app/api/mocks/words/translate";
-
-export default async function Page() {
-  // サーバー側で直接モック関数を実行
-  const { translations } = translateWords(["spring", "apple"]);
-
-  return (
-    <div>
-      {translations.map((item) => (
-        <div key={item.english}>
-          <h3>{item.english}</h3>
-          <p>訳候補: {item.options.join(" / ")}</p>
-        </div>
-      ))}
-    </div>
-  );
+  return response.json();
 }
 ```
