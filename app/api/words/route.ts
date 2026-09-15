@@ -142,7 +142,6 @@ export async function POST(request: Request) {
           .single();
 
         if (wordInsertError || !newWord) {
-          console.error("words 登録エラー:", wordInsertError);
           return NextResponse.json(
             { success: false, error: "単語の登録に失敗しました" },
             { status: 500 },
@@ -164,7 +163,6 @@ export async function POST(request: Request) {
 
       //もしエラーが発生した場合
       if (meaningSelectError) {
-        console.error("meanings 検索エラー:", meaningSelectError);
         return NextResponse.json(
           { success: false, error: "意味データの確認に失敗しました" },
           { status: 500 },
@@ -186,7 +184,6 @@ export async function POST(request: Request) {
           .single();
 
         if (meaningInsertError || !newMeaning) {
-          console.error("meanings 登録エラー:", meaningInsertError);
           return NextResponse.json(
             { success: false, error: "意味の登録に失敗しました" },
             { status: 500 },
@@ -206,7 +203,6 @@ export async function POST(request: Request) {
 
       //もしエラーが発生した場合
       if (userMeaningSelectError) {
-        console.error("user_meaning 検索エラー:", userMeaningSelectError);
         return NextResponse.json(
           { success: false, error: "ユーザー単語帳の確認に失敗しました" },
           { status: 500 },
@@ -222,7 +218,6 @@ export async function POST(request: Request) {
           });
 
         if (userMeaningInsertError) {
-          console.error("user_meaning 登録エラー:", userMeaningInsertError);
           return NextResponse.json(
             { success: false, error: "ユーザー単語帳への登録に失敗しました" },
             { status: 500 },
@@ -245,7 +240,6 @@ export async function POST(request: Request) {
       data: savedWords,
     });
   } catch (error) {
-    console.error("POST /api/words 予期せぬエラー:", error);
     return NextResponse.json(
       {
         success: false,
@@ -294,7 +288,6 @@ export async function GET(request: Request) {
       .order("created_at", { ascending: false });
 
     if (userMeaningsError) {
-      console.error("GET /api/words 単語一覧取得エラー:", userMeaningsError);
       return NextResponse.json(
         { error: "単語一覧の取得に失敗しました" },
         { status: 500 },
@@ -303,14 +296,17 @@ export async function GET(request: Request) {
 
     // 取得したデータをフロントエンドの形式 { id, english, japanese } に整形
     const words: WordListItem[] = (userMeaningsData || [])
+      //取ってきた単語を一つずつ取り出す
       .map((item: any) => {
+        // meanings 配列の最初の要素を取得（存在しない場合は null）
         const meaningObj = Array.isArray(item.meanings)
-          ? item.meanings[0]
-          : item.meanings;
+          ? item.meanings[0] // meanings 配列の最初の要素を取得
+          : item.meanings; // meanings が配列でない場合はそのまま使用
+        // words 配列の最初の要素を取得（存在しない場合は null）
         const wordObj = meaningObj
           ? Array.isArray(meaningObj.words)
-            ? meaningObj.words[0]
-            : meaningObj.words
+            ? meaningObj.words[0] // words 配列の最初の要素を取得
+            : meaningObj.words /// words が配列でない場合はそのまま使用
           : null;
 
         return {
@@ -319,6 +315,7 @@ export async function GET(request: Request) {
           japanese: meaningObj?.meaning ?? "",
         };
       })
+      //もし英語または日本語が空文字の場合は除外する
       .filter((w) => w.english && w.japanese);
 
     // 2. stories テーブルからユーザーの物語一覧を取得
@@ -329,7 +326,6 @@ export async function GET(request: Request) {
       .order("created_at", { ascending: false });
 
     if (storiesError) {
-      console.error("GET /api/words 物語一覧取得エラー:", storiesError);
       // 物語の取得エラー時は空配列にフォールバック（単語一覧の返却を妨げない）
     }
 
@@ -347,7 +343,6 @@ export async function GET(request: Request) {
 
     return NextResponse.json(responseData);
   } catch (error) {
-    console.error("GET /api/words 予期せぬエラー:", error);
     return NextResponse.json(
       { error: "一覧データの取得処理中に予期せぬエラーが発生しました" },
       { status: 500 },
