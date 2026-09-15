@@ -13,17 +13,24 @@ type GroupedWord = {
   meanings: string[];
 };
 
+type Story={
+  id:number;
+  title:string;
+  content:string;
+};
+
 export default function Tabs() {
   // 現在表示しているタブ
   const [activeTab, setActiveTab] = useState<Tab>("story");
   //単語データ
   const [words,setWords]=useState<GroupedWord[]>([]);
+  //物語データ
+  const [stories,setStories]=useState<Story[]>([]);
 
   useEffect(() => {
     async function getMockData() {
       const response = await fetch("/api/mocks/words");
-      console.log(response);
-      
+
       if (!response.ok) {
         // throw new Error("モックデータの取得に失敗しました");
         alert("モックデータの取得に失敗しました");
@@ -31,8 +38,7 @@ export default function Tabs() {
 
       const data: MocksResponse = await response.json();
 
-      console.log(data);
-
+      //英単語の取得
       const groupedWords = data.words.reduce<GroupedWord[]>((result, word) => {
         const existingWord = result.find(
           (item) => item.word_id === word.word_id
@@ -52,6 +58,9 @@ export default function Tabs() {
     }, []);
 
       setWords(groupedWords);
+
+      //物語データの取得
+      setStories(data.stories);
     }
 
     getMockData();
@@ -74,8 +83,12 @@ export default function Tabs() {
       <div>
         {activeTab === "story" && (
           <div>
-            <h2>物語一覧</h2>
-            <p>ここに物語を表示</p>
+            {stories.map((story) => (
+              <div key={story.id}>
+                <h3>{story.title}</h3>
+                <p>{story.content}</p>
+              </div>
+            ))}
           </div>
         )}
 
