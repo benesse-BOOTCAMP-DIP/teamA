@@ -1,0 +1,352 @@
+'use client';
+
+// このページでは、入力・クリック・画面遷移などブラウザ上の操作を扱うため、
+// Client Component として実行します。
+import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
+// これは子コンポを読んでいる。
+import WordInputRow, { type WordItem } from '@/components/WordInputRow';
+
+// 登録時に使用する仮のユーザーIDです。
+// プログラム全体で使う固定値のため、大文字とアンダースコアで命名しています。
+const DEFAULT_USER_ID = 1;
+
+// 入力可能な最大文字数です（仕様：45文字）
+const MAX_WORD_LENGTH = 45;
+
+// モックAPIから返される「未登録」を示す固定メッセージです。
+const NOT_FOUND_TEXT = '辞書に登録されていません';
+
+export default function WordRegisterPage() {
+  // router は、登録完了後に別のページへ移動するための機能です。
+  const router = useRouter();
+
+  // words が、この画面で入力している単語一覧の本体です。
+  // useState を使うと、setWords で値を更新したときに画面も自動で再表示されます。
+  // 最初は空の入力行を1行だけ用意します。
+  const [words, setWords] = useState<WordItem[]>([
+    { id: '1', english: '', japanese: '', japaneseOptions: [] },
+  ]);
+
+  // 画面上に表示するエラーメッセージを管理する状態です。
+  const [errorMessage, setErrorMessage] = useState<string>('');
+
+  // 通信中かどうかを管理する状態です（二重送信防止と再試行制御）。
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  // 英語入力が変更されたときに、対象の行だけを更新します。
+  const handleEnglishChange = (id: string, value: string): void => {//ここ、Void方と等しいならって言うTSの書き方。★★★★★★★
+    // 文字を入力し直したときは、既存のエラーメッセージをクリアします。
+    if (errorMessage) setErrorMessage('');
+
+    // setWords に関数を渡すと、更新直前の最新の配列を prevWords として受け取れます。
+    setWords((prevWords) =>
+      // map は配列の各要素を順番に確認し、新しい配列を作ります。
+      prevWords.map((word) =>
+        word.id === id
+          // ID が一致する行だけ、スプレッド構文 (...) でコピーして値を差し替えます。
+          // 英語を変更したら、以前の翻訳候補は古くなるため消します。
+          ? { ...word, english: value, japanese: '', japaneseOptions: [] }
+          // ID が違う行は、そのまま残します。
+          : word
+      )
+    );
+  };
+
+  // 日本語の候補が選択されたときに、対象の行の japanese だけを更新します。
+  const handleJapaneseChange = (id: string, value: string): void => {
+    if (errorMessage) setErrorMessage('');
+    setWords((prevWords) =>
+      prevWords.map((word) =>
+        word.id === id ? { ...word, japanese: value } : word
+      )
+    );
+  };
+
+  // 「行を追加する」ボタンが押されたときの処理です。
+  const handleAddRow = (): void => {
+    // 翻訳取得後は新しい行を追加できないようガードを入れます。
+    if (hasOptionsGenerated) return;
+    if (errorMessage) setErrorMessage('');
+
+    // Date.now() は現在時刻を数字で返します。
+    // 文字列に変換して、既存の行と重ならないIDとして使います。
+    const newId = Date.now().toString();
+    setWords((prevWords) => [
+      // 既存の行を残したまま、末尾に新しい空行を追加します。
+      ...prevWords,
+      { id: newId, english: '', japanese: '', japaneseOptions: [] },
+    ]);
+  };
+
+  // 行の削除ボタンが押されたときの処理です。
+  const handleRemoveRow = (id: string): void => {
+    // 入力行が1行だけのときは、空の画面にならないよう削除しません。
+    if (words.length <= 1) return;
+    if (errorMessage) setErrorMessage('');
+
+    // filter は、条件に合う要素だけを残した新しい配列を作ります。
+    // ここでは、削除対象のIDと異なる行だけを残しています。
+    setWords((prevWords) => prevWords.filter((word) => word.id !== id));
+  };
+
+  // 入力された英単語のバリデーション（入力チェック）を行います。
+  const validateEnglishInputs = (): boolean => {
+    // 空文字チェック：1行でも空の行があれば弾きます
+    const hasEmpty = words.some((w) => w.english.trim() === '');
+    if (hasEmpty) {
+      setErrorMessage('すべての行に英単語を入力してください。');
+      return false;
+    }
+
+    // 45文字制限チェック
+    const isOverLength = words.some((w) => w.english.trim().length > MAX_WORD_LENGTH);
+    if (isOverLength) {
+      setErrorMessage(`英単語は${MAX_WORD_LENGTH}文字以内で入力してください。`);
+      return false;
+    }
+
+    // 日本語混入チェック（半角英字・スペース・ハイフン・アポストロフィのみ許容）
+    // ひらがな・カタカナ・漢字・全角文字が含まれている場合は false になります。
+    const englishPattern = /^[a-zA-Z\s\-']+$/;
+    const hasInvalidChar = words.some((w) => !englishPattern.test(w.english.trim()));
+    if (hasInvalidChar) {
+      setErrorMessage('英語欄には半角英字のみを入力してください（日本語は含められません）。');
+      return false;
+    }
+
+    return true;
+  };
+
+  // 「翻訳を取得」ボタンの処理です。モックAPI（/api/mocks/words/translate）と通信します。
+  const handleFetchTranslations = async (): Promise<void> => {
+    // 送信前にバリデーションを実施
+    if (!validateEnglishInputs()) return;
+
+    setErrorMessage('');
+    setIsLoading(true);
+
+    // 入力されている英単語の配列を作成します。
+    // 小文字に統一し、前後の空白を除去し、API用のデータ形式へ整えます。
+    const englishWordList = words.map((w) => w.english.trim().toLowerCase());
+
+    // モックAPI仕様書に合わせたリクエストボディ { words: string[] }
+    const requestBody = {
+      words: englishWordList,
+    };
+
+    try {
+      // 提供されたモックAPIへPOSTリクエストを送信します。
+      const response = await fetch('/api/mocks/words/translate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
+      });
+
+      if (!response.ok) {
+        throw new Error('翻訳候補の取得に失敗しました');
+      }
+
+      // レスポンスの受け取り { translations: [{ english: "...", options: [...] }] }
+      const data = await response.json();
+
+      // ==========================================
+      // 【検証用アラート：翻訳取得】不要になったらここをコメントアウト
+      alert(
+        `【翻訳取得 API通信 成功！】\n\n` +
+        `▼ バックエンドへ送信したデータ:\n${JSON.stringify(requestBody, null, 2)}\n\n` +
+        `▼ バックエンドから返ってきた翻訳候補:\n${JSON.stringify(data, null, 2)}`
+      );
+      // ==========================================
+
+      // APIから返ってきた候補を、画面の各入力行（words）に反映します。
+      setWords((prevWords) =>
+        prevWords.map((word) => {
+          // 入力された英語と一致する候補結果を探します。
+          const matched = data.translations.find(
+            (item: { english: string; options: string[] }) =>
+              item.english.toLowerCase() === word.english.trim().toLowerCase()
+          );
+
+          const options = matched ? matched.options : [];
+          // もし選択肢が「辞書に登録されていません」1つだけなら、初期値としてそれをセットしておきます。
+          const isNotFoundOnly = options.length === 1 && options[0] === NOT_FOUND_TEXT;
+
+          return {
+            ...word,
+            // 見つかった場合は options 配列をセット、なければ空配列にします。
+            japaneseOptions: options,
+            japanese: isNotFoundOnly ? NOT_FOUND_TEXT : '',
+          };
+        })
+      );
+    } catch (error) {
+      console.error(error);
+      // 失敗時はユーザーに通知し、そのまま再試行できるようにします。
+      setErrorMessage('翻訳の取得に失敗しました。もう一度「翻訳を取得」を押して再試行してください。');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // 「この単語で登録する」ボタンの処理です。現在は登録APIの代わりに確認表示をします。
+  const handleRegisterSubmit = (): void => {
+    // 日本語訳が未選択の行がないかチェック（プルダウンを選んでいない行を防止）
+    const isMissingJapanese = words.some((w) => w.japanese.trim() === '');
+    if (isMissingJapanese) {
+      setErrorMessage('すべての単語の日本語訳を選択してください。');
+      return;
+    }
+
+    // 「辞書に登録されていません」となった単語を除外（削る）します。
+    const validWords = words.filter(
+      (w) => w.japanese.trim() !== NOT_FOUND_TEXT
+    );
+
+    // 有効な単語が1つも残らなかった場合は登録できないようにブロックします。
+    if (validWords.length === 0) {
+      setErrorMessage('登録できる単語がありません（すべての単語が辞書未登録です）。');
+      return;
+    }
+
+    setErrorMessage('');
+
+    // 【仕様変更対応】RegisterWordsRequest の型定義に準拠したデータ構造を作成
+    // WordInput[] の形式に整形
+    const formattedWords = validWords.map(({ english, japanese }) => ({
+      english: english.trim(),
+      japanese: japanese.trim(),
+    }));
+
+    // RegisterWordsRequest { userId: number; words: WordInput[] } を構築
+    const registerPayload = {
+      userId: DEFAULT_USER_ID,
+      words: formattedWords,
+    };
+
+    // 除外された単語があるかどうかの判定
+    const excludedCount = words.length - validWords.length;
+    const noticeText = excludedCount > 0
+      ? `※「辞書に登録されていません」の${excludedCount}件を除外して登録します。\n\n`
+      : '';
+
+    // ==========================================
+    // 【検証用アラート：単語登録】不要になったらここをコメントアウト
+    alert(
+      `【単語登録 API通信（モック）】\n\n` +
+      noticeText +
+      `▼ バックエンドへ送信する登録データ (指定仕様: RegisterWordsRequest):\n${JSON.stringify(registerPayload, null, 2)}\n\n` +
+      `※この後、一覧画面（/lists）へ遷移します`
+    );
+    // ==========================================
+
+    // 登録処理が終わった想定で、単語一覧画面へ移動します。
+    router.push('/lists');
+  };
+
+  // 画面下部に表示するボタンの状態を決めるための判定です。
+  // some は「1つでも条件に合う要素があるか」、every は「全要素が条件に合うか」を調べます。
+  // 翻訳候補が1つでもあれば、次の操作を「登録」に切り替えます。
+  const hasOptionsGenerated = words.some((w) => w.japaneseOptions.length > 0);
+  // 英語が1つでも入力されていれば、翻訳取得ボタンを押せるようにします。
+  const hasEnglishInput = words.some((w) => w.english.trim() !== '');
+  // すべての行で日本語訳が選択されていれば、登録ボタンを押せるようにします。
+  const isAllJapaneseSelected =
+    words.length > 0 && words.every((w) => w.japanese.trim() !== '');
+
+  return (
+    // main はページ全体。背景色は設定仕様の stone-50 (#fafaf9) を適用しています。
+    <main className="min-h-screen bg-stone-50 py-8 px-4 text-stone-800 flex justify-center items-start">
+      {/* 
+        対象画面サイズ: 393 × 852 px (iPhone標準) に最適化。
+        w-full max-w-[393px] でモバイル幅に固定し、デスクトップでもスマホ画面サイズで綺麗に中央表示されます。
+        背景は bg-white、ボーダーは stone-200 (#e7e5e4) です。
+      */}
+      <div className="w-full max-w-[393px] bg-white p-5 rounded-2xl border border-stone-200 shadow-sm">
+        <h1 className="text-lg font-bold text-center mb-6 text-stone-800">
+          単語を登録する
+        </h1>
+
+        {/* 単語入力行：words の数だけ WordInputRow を画面に並べます。 */}
+        <div className="mb-4">
+          {words.map((item, index) => (
+            <WordInputRow
+              // React が各行を区別できるよう、行ごとに一意な key を渡します。
+              key={item.id}
+              item={item}
+              index={index}
+              // 2行以上あるときだけ削除ボタンを表示します。
+              canDelete={words.length > 1}
+              // 子コンポーネントで起きた変更を、親の関数で処理します。
+              onEnglishChange={handleEnglishChange}
+              onJapaneseChange={handleJapaneseChange}
+              onRemoveRow={handleRemoveRow}
+            />
+          ))}
+        </div>
+
+        {/* 行追加ボタン：翻訳取得後は押せないように disabled かつグレーアウトにします。 */}
+        <button
+          type="button"
+          disabled={hasOptionsGenerated || isLoading}
+          onClick={handleAddRow}
+          className={`w-full py-2.5 mb-5 border-2 border-dashed rounded-xl font-bold flex items-center justify-center gap-1.5 text-sm transition-colors ${
+            hasOptionsGenerated || isLoading
+              ? 'border-stone-200 text-stone-300 bg-stone-50 cursor-not-allowed'
+              : 'border-stone-300 text-stone-600 hover:bg-stone-50 hover:border-stone-400 cursor-pointer'
+          }`}
+        >
+          <span className="text-base leading-none">＋</span>
+          <span>行を追加する</span>
+        </button>
+
+        {/* 
+          エラーメッセージの表示エリア
+          色覚や視認性に配慮し、背景を薄い赤、文字をはっきりした濃い赤（rose-700）で表示します。
+        */}
+        {errorMessage && (
+          <div className="mb-4 p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-700 leading-relaxed">
+            {errorMessage}
+          </div>
+        )}
+
+        {/*
+          翻訳候補がまだない間は「翻訳を取得」を表示します。
+          候補ができた後は「この単語で登録する」に切り替えます。
+          メインカラーは sky-600 (#0284c7) / sky-700 (#0369a1) を適用しています。
+        */}
+        {!hasOptionsGenerated ? (
+          <button
+            type="button"
+            // 英語が未入力、または通信中の場合はボタンを押せないようにします。
+            disabled={!hasEnglishInput || isLoading}
+            onClick={handleFetchTranslations}
+            className={`w-full py-3 font-bold rounded-xl text-sm transition-colors ${
+              hasEnglishInput && !isLoading
+                ? 'bg-sky-600 text-white hover:bg-sky-700 shadow-sm cursor-pointer'
+                : 'bg-stone-200 text-stone-400 cursor-not-allowed'
+            }`}
+          >
+            {isLoading ? '翻訳を取得中...' : '翻訳を取得'}
+          </button>
+        ) : (
+          <button
+            type="button"
+            // 全行の日本語訳が選択されていなければ、登録処理を実行できません。
+            disabled={!isAllJapaneseSelected || isLoading}
+            onClick={handleRegisterSubmit}
+            className={`w-full py-3 font-bold rounded-xl text-sm transition-colors ${
+              isAllJapaneseSelected && !isLoading
+                ? 'bg-sky-600 text-white hover:bg-sky-700 shadow-sm cursor-pointer'
+                : 'bg-stone-200 text-stone-400 cursor-not-allowed'
+            }`}
+          >
+            この単語で登録する
+          </button>
+        )}
+      </div>
+    </main>
+  );
+}
