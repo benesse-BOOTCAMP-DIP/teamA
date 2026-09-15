@@ -1,12 +1,29 @@
+/* 画面サイズ */
 .container{
     max-width: 393px;
     min-height: 100vh;
 }
+
+/* 共通 */
 .boxCenter{
     display: flex;
     justify-content: center;
 }
+
+/* タブ切り替え */
 .tab{
     width: 30%;
 }
 
+/* 単語一覧 */
+.wordTable {
+  width: 100%;
+  table-layout: fixed;
+}
+
+.tableRow{
+    width: 30%;
+}
+.textCenter{
+    text-align: center;
+}
