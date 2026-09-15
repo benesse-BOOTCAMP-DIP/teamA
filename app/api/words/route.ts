@@ -1,0 +1,232 @@
+import { NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
+import { validateWordInput } from "@/lib/validations/word";
+
+/**
+ * フロントエンドから送信される単語情報の型定義
+ */
+export interface WordInput {
+  english: string;
+  japanese: string;
+}
+
+/**
+ * フロントエンドから送信される単語登録リクエストの型定義
+ */
+export interface RegisterWordsRequest {
+  userId: number;
+  words: WordInput[];
+}
+
+/**
+ * DBに登録された単語情報の型定義
+ */
+export interface SavedWord {
+  meaning_id: number;
+  word_id: number;
+  english: string;
+  japanese: string;
+}
+
+/**
+ * POST ハンドラー (API Endpoint: POST /api/words)
+ * フロントエンドから送信された単語情報を受け取り、Supabase の words, meanings, user_meaning テーブルに登録する
+ *
+ * Request: JSON { "userId": 1, "words": [ { "english": "spring", "japanese": "春" } ] }
+ * Response: JSON { "success": true, "data": [ { "meaning_id": 1, ... } ] }
+ */
+//POST /api/wordsでアクセスしてきたときに実行される関数
+export async function POST(request: Request) {
+  try {
+    const body: Partial<RegisterWordsRequest> = await request.json();
+
+    // 1. リクエストボディの基本チェック(userId, words 配列の存在確認)
+    if (!body || !body.userId) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "ユーザーID（userId）が指定されていません",
+        },
+        { status: 400 },
+      );
+    }
+    if (!Array.isArray(body.words) || body.words.length === 0) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "登録する単語の配列（words）が指定されていません",
+        },
+        { status: 400 },
+      );
+    }
+
+    const userId = body.userId;
+
+    // 2. 各単語のバリデーションチェック（空文字、45文字上限）
+    for (const item of body.words) {
+      const validation = validateWordInput(item.english, item.japanese);
+      if (!validation.isValid) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: validation.error || "入力内容に不備があります",
+          },
+          { status: 400 },
+        );
+      }
+    }
+
+    // 3. Supabase への接続
+    const supabase = await createClient();
+    //今回登録できた単語の情報を格納する配列
+    const savedWords: SavedWord[] = [];
+
+    // 4. 単語ごとに words, meanings, user_meaning へ順次登録
+    for (const item of body.words) {
+      const trimmedEnglish = item.english.trim();
+      const trimmedJapanese = item.japanese.trim();
+
+      // --- ① words テーブル（英単語そのもの：既存があれば再利用） ---
+      let wordId: number;
+
+      //supabaseが返してきたdataとerrorを分割代入している
+      const { data: existingWord, error: wordSelectError } = await supabase
+        .from("words") //wordsテーブルからデータを取得
+        .select("word_id") //word_idカラムを取得
+        .eq("word", trimmedEnglish) //wordカラムがtrimmedEnglishと一致する行を取得
+        .maybeSingle(); //一致する行がなければnullを返す
+
+      //もしエラーが発生した場合
+      if (wordSelectError) {
+        console.error("words 検索エラー:", wordSelectError);
+        return NextResponse.json(
+          { success: false, error: "単語データの確認に失敗しました" },
+          { status: 500 },
+        );
+      }
+      //もし既存の単語が存在する場合
+      if (existingWord) {
+        // 既存の word_id を再利用
+        wordId = existingWord.word_id;
+      } else {
+        // 存在しない場合は新規作成
+        const { data: newWord, error: wordInsertError } = await supabase
+          .from("words")
+          .insert({ word: trimmedEnglish })
+          .select("word_id")
+          .single();
+
+        if (wordInsertError || !newWord) {
+          console.error("words 登録エラー:", wordInsertError);
+          return NextResponse.json(
+            { success: false, error: "単語の登録に失敗しました" },
+            { status: 500 },
+          );
+        }
+        wordId = newWord.word_id;
+      }
+
+      // --- ② meanings テーブル（日本語の意味：同じ word_id に同じ意味があれば再利用） ---
+      let meaningId: number;
+
+      const { data: existingMeaning, error: meaningSelectError } =
+        await supabase
+          .from("meanings")
+          .select("meaning_id")
+          .eq("word_id", wordId)
+          .eq("meaning", trimmedJapanese)
+          .maybeSingle();
+
+      //もしエラーが発生した場合
+      if (meaningSelectError) {
+        console.error("meanings 検索エラー:", meaningSelectError);
+        return NextResponse.json(
+          { success: false, error: "意味データの確認に失敗しました" },
+          { status: 500 },
+        );
+      }
+      //もし既存の意味が存在する場合
+      if (existingMeaning) {
+        // 既存の meaning_id を再利用
+        meaningId = existingMeaning.meaning_id;
+      } else {
+        // 新規作成（同じ word_id に同じ意味がない場合のみ）
+        const { data: newMeaning, error: meaningInsertError } = await supabase
+          .from("meanings")
+          .insert({
+            word_id: wordId,
+            meaning: trimmedJapanese,
+          })
+          .select("meaning_id")
+          .single();
+
+        if (meaningInsertError || !newMeaning) {
+          console.error("meanings 登録エラー:", meaningInsertError);
+          return NextResponse.json(
+            { success: false, error: "意味の登録に失敗しました" },
+            { status: 500 },
+          );
+        }
+        meaningId = newMeaning.meaning_id;
+      }
+
+      // --- ③ user_meaning テーブル（ユーザー単語帳への紐付け：重複防止） ---
+      const { data: existingUserMeaning, error: userMeaningSelectError } =
+        await supabase
+          .from("user_meaning")
+          .select("meaning_id")
+          .eq("user_id", userId)
+          .eq("meaning_id", meaningId)
+          .maybeSingle();
+
+      //もしエラーが発生した場合
+      if (userMeaningSelectError) {
+        console.error("user_meaning 検索エラー:", userMeaningSelectError);
+        return NextResponse.json(
+          { success: false, error: "ユーザー単語帳の確認に失敗しました" },
+          { status: 500 },
+        );
+      }
+      //もし既存のユーザー単語帳に意味が存在しない場合
+      if (!existingUserMeaning) {
+        const { error: userMeaningInsertError } = await supabase
+          .from("user_meaning")
+          .insert({
+            user_id: userId,
+            meaning_id: meaningId,
+          });
+
+        if (userMeaningInsertError) {
+          console.error("user_meaning 登録エラー:", userMeaningInsertError);
+          return NextResponse.json(
+            { success: false, error: "ユーザー単語帳への登録に失敗しました" },
+            { status: 500 },
+          );
+        }
+      }
+
+      // 保存された単語の情報をリストに追加
+      savedWords.push({
+        meaning_id: meaningId,
+        word_id: wordId,
+        english: trimmedEnglish,
+        japanese: trimmedJapanese,
+      });
+    }
+
+    // 成功レスポンス（200 OK）
+    return NextResponse.json({
+      success: true,
+      data: savedWords,
+    });
+  } catch (error) {
+    console.error("POST /api/words 予期せぬエラー:", error);
+    return NextResponse.json(
+      {
+        success: false,
+        error: "単語の登録処理中に予期せぬエラーが発生しました",
+      },
+      { status: 500 },
+    );
+  }
+}

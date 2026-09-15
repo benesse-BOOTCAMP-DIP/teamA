@@ -13,7 +13,8 @@ export interface Story {
  * 単語の型定義
  */
 export interface Word {
-  id: number;
+  meaning_id: number;
+  word_id:number;
   english: string;
   japanese: string;
 }
@@ -39,14 +40,28 @@ const MOCK_DATA: MocksResponse = {
   ],
   words: [
     {
-      id: 1,
+      meaning_id: 1,
+      word_id:1,
+      english: "book",
+      japanese: "本",
+    },
+    {
+      meaning_id: 2,
+      word_id:2,
       english: "fish",
       japanese: "魚",
     },
     {
-      id: 2,
+      meaning_id:3,
+      word_id:3,
       english: "ramen",
       japanese: "ラーメン",
+    },
+    {
+      meaning_id: 4,
+      word_id:1,
+      english: "book",
+      japanese: "予約する",
     },
   ],
 };

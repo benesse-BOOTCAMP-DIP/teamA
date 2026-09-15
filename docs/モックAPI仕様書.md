@@ -18,25 +18,39 @@
 
 ```json
 {
-  "stories": [
-    {
-      "id": 1,
-      "title": "魚とラーメン",
-      "content": "Ken has a fish. He likes ramen very much."
-    }
-  ],
-  "words": [
-    {
-      "id": 1,
-      "english": "fish",
-      "japanese": "魚"
-    },
-    {
-      "id": 2,
-      "english": "ramen",
-      "japanese": "ラーメン"
-    }
-  ]
+  "stories": [
+    {
+      "id": 1,
+      "title": "魚とラーメン",
+      "content": "Ken has a fish. He likes ramen very much."
+    }
+  ],
+  "words": [
+    {
+      "meaning_id": 1,
+      "word_id":1,
+      "english": "book",
+      "japanese": "本"
+    },
+   {
+      "meaning_id": 2,
+      "word_id":2,
+      "english": "fish",
+      "japanese": "魚"
+    },
+    {
+      "meaning_id": 3,
+      "word_id":3,
+      "english": "ramen",
+      "japanese": "ラーメン"
+    },
+   {
+      "meaning_id": 4,
+      "word_id":1,
+      "english": "book",
+      "japanese": "予約する"
+    },
+  ]
 }
 ```
 
