@@ -52,7 +52,7 @@ const MOCK_DATA: MocksResponse = {
 };
 
 /**
- * GET ハンドラー (API Endpoint: /api/mocks)
+ * GET ハンドラー (API Endpoint: /api/mocks/words)
  */
 export async function GET() {
   return NextResponse.json(MOCK_DATA);

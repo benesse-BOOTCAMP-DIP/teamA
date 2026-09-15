@@ -10,8 +10,9 @@
 
 ### 📌 基本情報
 
-- **エンドポイント**: `/api/mocks`
+- **エンドポイント**: `/api/mocks/words`
 - **HTTP メソッド**: `GET`
+- **実装ファイル**: `app/api/mocks/words/route.ts`
 
 ### 📤 レスポンス仕様 (JSON)
 
@@ -39,7 +40,7 @@
 }
 ```
 
-### 📐 TypeScript 型定義 (`@/app/api/mocks/route`)
+### 📐 TypeScript 型定義 (`@/app/api/mocks/words/route`)
 
 ```typescript
 export interface Story {
@@ -63,10 +64,10 @@ export interface MocksResponse {
 ### 💻 フロントエンド実装コード例 (`fetch`)
 
 ```typescript
-import type { MocksResponse } from "@/app/api/mocks/route";
+import type { MocksResponse } from "@/app/api/mocks/words/route";
 
 async function getMockData(): Promise<MocksResponse> {
-  const res = await fetch("/api/mocks");
+  const res = await fetch("/api/mocks/words");
   if (!res.ok) {
     throw new Error("モックデータの取得に失敗しました");
   }
@@ -85,6 +86,7 @@ async function getMockData(): Promise<MocksResponse> {
 - **エンドポイント**: `/api/mocks/words/translate`
 - **HTTP メソッド**: `POST`
 - **リクエストヘッダー**: `Content-Type: application/json`
+- **実装ファイル**: `app/api/mocks/words/translate/route.ts`
 
 ### 📥 リクエスト仕様 (JSON)
 
@@ -173,4 +175,12 @@ async function fetchTranslations(words: string[]): Promise<TranslateResponse> {
 
   return response.json();
 }
+```
+
+### 💻 サーバー側で直接関数を呼び出す例 (Server Component / Action)
+
+```typescript
+import { translateWords } from "@/app/api/mocks/words/translate/route";
+
+const { translations } = translateWords(["spring", "apple"]);
 ```
