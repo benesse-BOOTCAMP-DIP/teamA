@@ -1,0 +1,12 @@
+.container{
+    max-width: 393px;
+    min-height: 100vh;
+}
+.boxCenter{
+    display: flex;
+    justify-content: center;
+}
+.tab{
+    width: 30%;
+}
+
