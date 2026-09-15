@@ -41,6 +41,7 @@ export interface StoryItem {
  * 一覧取得で返す単語の型定義
  */
 export interface WordListItem {
+  id: number;
   meaning_id: number;
   word_id: number;
   english: string;
@@ -311,6 +312,7 @@ export async function GET(request: Request) {
           : null;
 
         return {
+          id: item.meaning_id,
           meaning_id: item.meaning_id,
           word_id: wordObj?.word_id ?? 0,
           english: wordObj?.word ?? "",
