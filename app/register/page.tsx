@@ -237,8 +237,8 @@ export default function WordRegisterPage() {
         throw new Error(data.error || '単語の登録に失敗しました');
       }
 
-      // 登録成功時は、単語一覧画面（/lists）へ遷移します。
-      router.push('/lists');
+      // 登録成功時は、単語一覧画面（/list）へ遷移します。
+      router.push('/list');
     } catch (error: unknown) {
       console.error(error);
       const message = error instanceof Error ? error.message : '';
@@ -295,11 +295,10 @@ export default function WordRegisterPage() {
           type="button"
           disabled={hasOptionsGenerated || isLoading}
           onClick={handleAddRow}
-          className={`w-full py-2.5 mb-5 border-2 border-dashed rounded-xl font-bold flex items-center justify-center gap-1.5 text-sm transition-colors ${
-            hasOptionsGenerated || isLoading
+          className={`w-full py-2.5 mb-5 border-2 border-dashed rounded-xl font-bold flex items-center justify-center gap-1.5 text-sm transition-colors ${hasOptionsGenerated || isLoading
               ? 'border-stone-200 text-stone-300 bg-stone-50 cursor-not-allowed'
               : 'border-stone-300 text-stone-600 hover:bg-stone-50 hover:border-stone-400 cursor-pointer'
-          }`}
+            }`}
         >
           <span className="text-base leading-none">＋</span>
           <span>行を追加する</span>
@@ -326,11 +325,10 @@ export default function WordRegisterPage() {
             // 英語が未入力、または通信中の場合はボタンを押せないようにします。
             disabled={!hasEnglishInput || isLoading}
             onClick={handleFetchTranslations}
-            className={`w-full py-3 font-bold rounded-xl text-sm transition-colors ${
-              hasEnglishInput && !isLoading
+            className={`w-full py-3 font-bold rounded-xl text-sm transition-colors ${hasEnglishInput && !isLoading
                 ? 'bg-sky-600 text-white hover:bg-sky-700 shadow-sm cursor-pointer'
                 : 'bg-stone-200 text-stone-400 cursor-not-allowed'
-            }`}
+              }`}
           >
             {isLoading ? '翻訳を取得中...' : '翻訳を取得'}
           </button>
@@ -341,11 +339,10 @@ export default function WordRegisterPage() {
             // 日本語のプルダウンメニューを全部選び終わるまで、登録ボタンを灰色にしておく条件分岐
             disabled={!isAllJapaneseSelected || isLoading}
             onClick={handleRegisterSubmit}
-            className={`w-full py-3 font-bold rounded-xl text-sm transition-colors ${
-              isAllJapaneseSelected && !isLoading
+            className={`w-full py-3 font-bold rounded-xl text-sm transition-colors ${isAllJapaneseSelected && !isLoading
                 ? 'bg-sky-600 text-white hover:bg-sky-700 shadow-sm cursor-pointer'
                 : 'bg-stone-200 text-stone-400 cursor-not-allowed'
-            }`}
+              }`}
           >
             {isLoading ? '登録中...' : 'この単語で登録する'}
           </button>
