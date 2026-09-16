@@ -174,10 +174,11 @@ export default function WordRegisterPage() {
           };
         })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(error);
       // 失敗時はユーザーに通知し、そのまま再試行できるようにします。
-      setErrorMessage(error.message || '翻訳の取得に失敗しました。もう一度「翻訳を取得」を押して再試行してください。');
+      const message = error instanceof Error ? error.message : '';
+      setErrorMessage(message || '翻訳の取得に失敗しました。もう一度「翻訳を取得」を押して再試行してください。');
     } finally {
       setIsLoading(false);
     }
@@ -238,9 +239,10 @@ export default function WordRegisterPage() {
 
       // 登録成功時は、単語一覧画面（/lists）へ遷移します。
       router.push('/lists');
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(error);
-      setErrorMessage(error.message || '登録処理中にエラーが発生しました。もう一度お試しください。');
+      const message = error instanceof Error ? error.message : '';
+      setErrorMessage(message || '登録処理中にエラーが発生しました。もう一度お試しください。');
     } finally {
       setIsLoading(false);
     }
