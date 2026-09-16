@@ -35,12 +35,12 @@
 }
 ```
 
-| フィールド         | 型            | 必須 | 説明                                   |
-| ------------------ | ------------- | ---- | -------------------------------------- |
-| `userId`           | `number`      | ○    | 登録するユーザーのID                   |
-| `words`            | `WordInput[]` | ○    | 登録する単語の配列（1件以上）          |
-| `words[].english`  | `string`      | ○    | 英単語（トリム後 1〜45文字）           |
-| `words[].japanese` | `string`      | ○    | 日本語訳・意味（トリム後 1〜45文字）   |
+| フィールド         | 型            | 必須 | 説明                                 |
+| ------------------ | ------------- | ---- | ------------------------------------ |
+| `userId`           | `number`      | ○    | 登録するユーザーのID                 |
+| `words`            | `WordInput[]` | ○    | 登録する単語の配列（1件以上）        |
+| `words[].english`  | `string`      | ○    | 英単語（トリム後 1〜45文字）         |
+| `words[].japanese` | `string`      | ○    | 日本語訳・意味（トリム後 1〜45文字） |
 
 > ℹ️ `userId` はログイン機能が実装されるまで、仮の値（例: `1`）を指定します。
 
@@ -70,14 +70,14 @@
 }
 ```
 
-| フィールド        | 型            | 説明                                      |
-| ----------------- | ------------- | ----------------------------------------- |
-| `success`         | `boolean`     | 成功フラグ（`true`）                      |
-| `data`            | `SavedWord[]` | 登録・保存された単語情報の配列            |
-| `data[].meaning_id` | `number`    | 意味ID（`meanings` テーブルの主キー）     |
-| `data[].word_id`    | `number`    | 単語ID（`words` テーブルの主キー）        |
-| `data[].english`   | `string`    | 登録された英単語                          |
-| `data[].japanese`  | `string`    | 登録された日本語訳                        |
+| フィールド          | 型            | 説明                                  |
+| ------------------- | ------------- | ------------------------------------- |
+| `success`           | `boolean`     | 成功フラグ（`true`）                  |
+| `data`              | `SavedWord[]` | 登録・保存された単語情報の配列        |
+| `data[].meaning_id` | `number`      | 意味ID（`meanings` テーブルの主キー） |
+| `data[].word_id`    | `number`      | 単語ID（`words` テーブルの主キー）    |
+| `data[].english`    | `string`      | 登録された英単語                      |
+| `data[].japanese`   | `string`      | 登録された日本語訳                    |
 
 #### バリデーションエラー時 `400 Bad Request`
 
@@ -90,14 +90,14 @@
 }
 ```
 
-| ケース                              | `error` の返却例                                                                |
-| ---------------------------------- | ------------------------------------------------------------------------------- |
-| `userId` の未指定                  | `ユーザーID（userId）が指定されていません`                                      |
-| `words` 配列の未指定・空配列       | `登録する単語の配列（words）が指定されていません`                              |
-| 英単語が空文字                     | `英単語を入力してください`                                                      |
-| 意味（日本語訳）が空文字           | `意味を入力してください`                                                        |
-| 英単語が 46 文字以上               | `英単語は45文字以内で入力してください（現在: XX文字）`                           |
-| 意味（日本語訳）が 46 文字以上     | `意味は45文字以内で入力してください（現在: XX文字）`                             |
+| ケース                         | `error` の返却例                                       |
+| ------------------------------ | ------------------------------------------------------ |
+| `userId` の未指定              | `ユーザーID（userId）が指定されていません`             |
+| `words` 配列の未指定・空配列   | `登録する単語の配列（words）が指定されていません`      |
+| 英単語が空文字                 | `英単語を入力してください`                             |
+| 意味（日本語訳）が空文字       | `意味を入力してください`                               |
+| 英単語が 46 文字以上           | `英単語は45文字以内で入力してください（現在: XX文字）` |
+| 意味（日本語訳）が 46 文字以上 | `意味は45文字以内で入力してください（現在: XX文字）`   |
 
 #### サーバー・DBエラー時 `500 Internal Server Error`
 
@@ -144,9 +144,9 @@ export interface SavedWord {
 
 ### 📥 リクエスト（フロント → バック）
 
-| パラメータ | 型       | 必須 | 説明                                                        |
-| :--------- | :------- | :--- | :---------------------------------------------------------- |
-| `userId`   | `number` | ○    | 取得対象のユーザーID（例: `/api/words?userId=1`）          |
+| パラメータ | 型       | 必須 | 説明                                              |
+| :--------- | :------- | :--- | :------------------------------------------------ |
+| `userId`   | `number` | ○    | 取得対象のユーザーID（例: `/api/words?userId=1`） |
 
 > ℹ️ クエリパラメータ `userId` 省略時は `0` として扱われます。
 
@@ -254,9 +254,9 @@ export interface WordsListResponse {
 }
 ```
 
-| フィールド | 型         | 必須 | 説明                                     |
-| ---------- | ---------- | ---- | ---------------------------------------- |
-| `words`    | `string[]` | ○    | 訳候補を生成する英単語の配列（1件以上）  |
+| フィールド | 型         | 必須 | 説明                                    |
+| ---------- | ---------- | ---- | --------------------------------------- |
+| `words`    | `string[]` | ○    | 訳候補を生成する英単語の配列（1件以上） |
 
 ### 📤 レスポンス（バック → フロント）
 
@@ -283,11 +283,11 @@ export interface WordsListResponse {
 }
 ```
 
-| フィールド                   | 型                    | 説明                                           |
-| ---------------------------- | --------------------- | ---------------------------------------------- |
-| `translations`               | `TranslationOption[]` | 各単語の翻訳結果リスト                         |
-| `translations[].english`     | `string`              | 元の英単語                                     |
-| `translations[].options`     | `string[]`            | 代表的な日本語訳候補（良く使われる順に3〜5個） |
+| フィールド               | 型                    | 説明                                           |
+| ------------------------ | --------------------- | ---------------------------------------------- |
+| `translations`           | `TranslationOption[]` | 各単語の翻訳結果リスト                         |
+| `translations[].english` | `string`              | 元の英単語                                     |
+| `translations[].options` | `string[]`            | 代表的な日本語訳候補（良く使われる順に3〜5個） |
 
 #### リクエスト不備時 `400 Bad Request`
 
@@ -329,6 +329,342 @@ export interface TranslationOption {
 
 export interface TranslateResponse {
   translations: TranslationOption[];
+}
+```
+
+---
+
+## 4. 単語から文章（物語）生成 API
+
+選択した英単語リストをもとに、Gemini AI が自然な英語のショートストーリー、和訳、日本語タイトル、文中での実際の使用形（活用形）を生成します。
+※この時点ではまだデータベースには保存しません（画面でのプレビュー・確認用）。
+
+- **URL**: `POST /api/stories/generate`
+- **Content-Type**: `application/json`
+- **実装ファイル**: `app/api/stories/generate/route.ts`
+
+### 📥 リクエスト（フロント → バック）
+
+```json
+{
+  "words": [
+    { "meaningId": 1, "word": "run", "meaning": "走る" },
+    { "meaningId": 2, "word": "park", "meaning": "公園" }
+  ]
+}
+```
+
+| フィールド          | 型                 | 必須 | 説明                                           |
+| :------------------ | :----------------- | :--- | :--------------------------------------------- |
+| `words`             | `StoryWordInput[]` | ○    | 物語に含める単語の配列（1件以上、推奨3〜10件） |
+| `words[].meaningId` | `number`           | ○    | 単語の意味ID（DB保存時の紐付け用）             |
+| `words[].word`      | `string`           | ○    | 英単語                                         |
+| `words[].meaning`   | `string`           | ○    | 日本語の意味・訳                               |
+
+### 📤 レスポンス（バック → フロント）
+
+#### 成功時 `200 OK`
+
+```json
+{
+  "title": "朝の公園ルーティン",
+  "story": "Every morning, I ran to the park to enjoy the fresh air.",
+  "japaneseStory": "毎朝、私は新鮮な空気を楽しむために公園へ走りました。",
+  "words": [
+    {
+      "meaningId": 1,
+      "word": "run",
+      "surfaces": ["ran"]
+    },
+    {
+      "meaningId": 2,
+      "word": "park",
+      "surfaces": ["park"]
+    }
+  ]
+}
+```
+
+| フィールド          | 型                     | 説明                                                        |
+| :------------------ | :--------------------- | :---------------------------------------------------------- |
+| `title`             | `string`               | 物語のタイトル（日本語）                                    |
+| `story`             | `string`               | 英文本文                                                    |
+| `japaneseStory`     | `string`               | 和訳本文                                                    |
+| `words`             | `GeneratedStoryWord[]` | 本文中で使用された各単語の情報                              |
+| `words[].meaningId` | `number`               | 単語の意味ID                                                |
+| `words[].word`      | `string`               | 元の英単語                                                  |
+| `words[].surfaces`  | `string[]`             | 物語の中で実際に使われた形（活用形など、例: `run` ➜ `ran`） |
+
+#### エラー時 `400 Bad Request` / `500 Internal Server Error`
+
+- `400`: `単語の配列（words）が指定されていません`
+- `500`: `物語の生成に失敗しました`
+
+### TypeScript 型定義 (`@/app/api/stories/generate/route`)
+
+```typescript
+export interface StoryWordInput {
+  meaningId: number;
+  word: string;
+  meaning: string;
+}
+
+export interface GenerateStoryRequest {
+  words: StoryWordInput[];
+}
+
+export interface GeneratedStoryWord {
+  meaningId: number;
+  word: string;
+  surfaces: string[];
+}
+
+export interface GenerateStoryResponse {
+  title: string;
+  story: string;
+  japaneseStory: string;
+  words: GeneratedStoryWord[];
+}
+```
+
+---
+
+## 5. 文章（物語）登録 API
+
+ユーザーが生成・プレビューして確定した物語をデータベース（`stories` テーブル）に保存し、物語に含まれる単語との紐付け（`meaning_story` テーブル）を作成します。
+
+- **URL**: `POST /api/stories`
+- **Content-Type**: `application/json`
+- **実装ファイル**: `app/api/stories/route.ts`
+
+### 📥 リクエスト（フロント → バック）
+
+```json
+{
+  "userId": 1,
+  "title": "朝の公園ルーティン",
+  "story": "Every morning, I ran to the park to enjoy the fresh air.",
+  "japaneseStory": "毎朝、私は新鮮な空気を楽しむために公園へ走りました。",
+  "words": [
+    { "meaningId": 1, "surfaces": ["ran"] },
+    { "meaningId": 2, "surfaces": ["park"] }
+  ]
+}
+```
+
+| フィールド          | 型                    | 必須 | 説明                                  |
+| :------------------ | :-------------------- | :--- | :------------------------------------ |
+| `userId`            | `number`              | ○    | 作成したユーザーID                    |
+| `title`             | `string`              | ○    | 物語のタイトル（日本語）              |
+| `story`             | `string`              | ○    | 英文本文                              |
+| `japaneseStory`     | `string`              | -    | 和訳本文                              |
+| `words`             | `StoryMeaningInput[]` | ○    | 物語に含まれる単語と活用形の配列      |
+| `words[].meaningId` | `number`              | ○    | 紐付ける意味ID（`meaning_id`）        |
+| `words[].surfaces`  | `string[]`            | -    | 物語中での実際の表記（例: `["ran"]`） |
+
+### 📤 レスポンス（バック → フロント）
+
+#### 成功時 `200 OK`
+
+```json
+{
+  "success": true,
+  "data": {
+    "storyId": 10,
+    "title": "朝の公園ルーティン",
+    "createdAt": "2026-09-16T10:00:00Z"
+  }
+}
+```
+
+| フィールド       | 型        | 説明                           |
+| :--------------- | :-------- | :----------------------------- |
+| `success`        | `boolean` | 成功フラグ（`true`）           |
+| `data.storyId`   | `number`  | 登録された物語ID（`story_id`） |
+| `data.title`     | `string`  | 物語タイトル                   |
+| `data.createdAt` | `string`  | 登録日時 (ISO 8601)            |
+
+#### エラー時 `400 Bad Request` / `500 Internal Server Error`
+
+- `400`: `タイトルおよび英文本文を入力してください`
+- `500`: `物語の登録処理中に予期せぬエラーが発生しました`
+
+### TypeScript 型定義 (`@/app/api/stories/route`)
+
+```typescript
+export interface StoryMeaningInput {
+  meaningId: number;
+  surfaces: string[];
+}
+
+export interface RegisterStoryRequest {
+  userId: number;
+  title: string;
+  story: string;
+  japaneseStory?: string;
+  words: StoryMeaningInput[];
+}
+
+export interface RegisterStoryResponse {
+  success: boolean;
+  data?: {
+    storyId: number;
+    title: string;
+    createdAt: string;
+  };
+  error?: string;
+}
+```
+
+---
+
+## 6. 物語一覧・詳細取得 API
+
+ユーザーが作成した物語の一覧、および特定の物語の詳細（本文＋使用されている単語カード情報）を取得します。
+
+- **URL**:
+  - **一覧取得**: `GET /api/stories?userId=1`
+  - **詳細取得**: `GET /api/stories/[id]` （例: `GET /api/stories/10`）
+- **実装ファイル**:
+  - 一覧: `app/api/stories/route.ts`
+  - 詳細: `app/api/stories/[id]/route.ts`
+
+### 6.1 物語一覧取得 (`GET /api/stories?userId=1`)
+
+#### 📥 リクエスト
+
+| パラメータ | 型       | 必須 | 説明                 |
+| :--------- | :------- | :--- | :------------------- |
+| `userId`   | `number` | ○    | 取得対象のユーザーID |
+
+#### 📤 レスポンス `200 OK`
+
+物語タブなどでカード一覧を表示するための軽量なデータです。登録日の新しい順（降順）で返ります。
+
+```json
+{
+  "stories": [
+    {
+      "storyId": 10,
+      "title": "朝の公園ルーティン",
+      "story": "Every morning, I ran to the park...",
+      "japaneseStory": "毎朝、私は新鮮な空気を...",
+      "createdAt": "2026-09-16T10:00:00Z"
+    }
+  ]
+}
+```
+
+---
+
+### 6.2 物語詳細取得 (`GET /api/stories/[id]`)
+
+物語詳細画面を開いた際に、本文と同時に**「この物語で学べる単語リスト（意味や文中での活用形を含む）」**を一度に取得します。
+
+#### 📤 レスポンス `200 OK`
+
+```json
+{
+  "storyId": 10,
+  "title": "朝の公園ルーティン",
+  "story": "Every morning, I ran to the park to enjoy the fresh air.",
+  "japaneseStory": "毎朝、私は新鮮な空気を楽しむために公園へ走りました。",
+  "createdAt": "2026-09-16T10:00:00Z",
+  "words": [
+    {
+      "meaningId": 1,
+      "english": "run",
+      "japanese": "走る",
+      "surfaces": ["ran"]
+    },
+    {
+      "meaningId": 2,
+      "english": "park",
+      "japanese": "公園",
+      "surfaces": ["park"]
+    }
+  ]
+}
+```
+
+| フィールド          | 型                  | 説明                               |
+| :------------------ | :------------------ | :--------------------------------- |
+| `storyId`           | `number`            | 物語ID                             |
+| `title`             | `string`            | 物語タイトル（日本語）             |
+| `story`             | `string`            | 英文本文                           |
+| `japaneseStory`     | `string`            | 和訳本文                           |
+| `createdAt`         | `string`            | 作成日時                           |
+| `words`             | `StoryDetailWord[]` | 物語で使用されている単語リスト     |
+| `words[].meaningId` | `number`            | 意味ID                             |
+| `words[].english`   | `string`            | 英単語                             |
+| `words[].japanese`  | `string`            | 日本語訳                           |
+| `words[].surfaces`  | `string[]`          | 物語中での実際の表記（活用形など） |
+
+### TypeScript 型定義
+
+```typescript
+export interface StoryListItem {
+  storyId: number;
+  title: string;
+  story: string;
+  japaneseStory: string;
+  createdAt: string;
+}
+
+export interface StoryListResponse {
+  stories: StoryListItem[];
+}
+
+export interface StoryDetailWord {
+  meaningId: number;
+  english: string;
+  japanese: string;
+  surfaces: string[];
+}
+
+export interface StoryDetailResponse {
+  storyId: number;
+  title: string;
+  story: string;
+  japaneseStory: string;
+  createdAt: string;
+  words: StoryDetailWord[];
+}
+```
+
+---
+
+## 7. 物語削除 API
+
+指定した物語を削除します。
+データベース上では `meaning_story` の紐付けを削除し、`stories` テーブルのレコードを削除します（※単語帳自体の単語や意味は保持されます）。
+
+- **URL**: `DELETE /api/stories/[id]` （例: `DELETE /api/stories/10`）
+- **実装ファイル**: `app/api/stories/[id]/route.ts`
+
+### 📤 レスポンス
+
+#### 成功時 `200 OK`
+
+```json
+{
+  "success": true,
+  "message": "物語を削除しました"
+}
+```
+
+#### 失敗時 `404 Not Found` / `500 Internal Server Error`
+
+- `404`: `指定された物語が見つかりません`
+- `500`: `物語の削除処理中に予期せぬエラーが発生しました`
+
+### TypeScript 型定義
+
+```typescript
+export interface DeleteStoryResponse {
+  success: boolean;
+  message?: string;
+  error?: string;
 }
 ```
 
