@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { MocksResponse, Word } from "@/app/api/mocks/words/route";
+import type { WordsListResponse } from "@/app/api/words/route";
 import styles from "./page.module.css";
 
 type Tab = "story" | "word";
@@ -9,8 +9,13 @@ type Tab = "story" | "word";
 type GroupedWord = {
   word_id: number;
   english: string;
-  meanings: string[];
+  meanings:Meaning[];
 };
+
+type Meaning={
+  meaning_id:number;
+  meaning:string;
+}
 
 type Story={
   id:number;
@@ -34,7 +39,7 @@ export default function Tabs() {
         alert("モックデータの取得に失敗しました");
       }
 
-      const data: MocksResponse = await response.json();
+      const data: WordsListResponse = await response.json();
 
       //同じ英単語の意味を配列に保持
       const groupedWords = data.words.reduce<GroupedWord[]>((result, word) => {
@@ -43,13 +48,12 @@ export default function Tabs() {
         );
 
         if (existingWord) {
-          existingWord.meanings.push(word.japanese);
+          existingWord.meanings.push({ meaning_id: word.meaning_id, meaning: word.japanese, });
         } else {
           result.push({
-            word_id: word.word_id,
-            english: word.english,
-            meanings: [word.japanese],
-          });
+             word_id: word.word_id,
+             english: word.english, 
+             meanings: [ { meaning_id: word.meaning_id, meaning: word.japanese, }, ], });
         }
 
         return result;
@@ -110,7 +114,7 @@ export default function Tabs() {
                               <td className={styles.textCenter}>{word.english}</td>
                               <td  className={styles.textCenter}>
                                 {word.meanings.map((meaning) => {
-                                  return <p key={meaning}>{meaning}</p>;
+                                  return <p key={meaning.meaning_id}>{meaning.meaning}</p>;
                                 })}
                               </td>
                           </tr>
