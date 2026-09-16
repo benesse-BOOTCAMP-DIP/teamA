@@ -14,7 +14,7 @@ const DEFAULT_USER_ID = 1;
 // 入力可能な最大文字数です（仕様：45文字）
 const MAX_WORD_LENGTH = 45;
 
-// モックAPIから返される「未登録」を示す固定メッセージです。
+// モックやバックエンドから返される「未登録」を示す固定メッセージです。
 const NOT_FOUND_TEXT = '辞書に登録されていません';
 
 export default function WordRegisterPage() {
@@ -67,7 +67,7 @@ export default function WordRegisterPage() {
   const handleAddRow = (): void => {
     // 翻訳取得後は新しい行を追加できないようガードを入れます。
     if (hasOptionsGenerated) return;
-    if (errorMessage) setErrorMessage('');
+    if (errorMessage) setErrorMessage('');//一旦エラーを消して。
 
     // Date.now() は現在時刻を数字で返します。
     // 文字列に変換して、既存の行と重ならないIDとして使います。
@@ -99,7 +99,7 @@ export default function WordRegisterPage() {
       return false;
     }
 
-    // 45文字制限チェック
+    // 45文字制限チェック：45時の理由は最長の英単語。Pneumonoultramicroscopicsilicovolcanoconiosis
     const isOverLength = words.some((w) => w.english.trim().length > MAX_WORD_LENGTH);
     if (isOverLength) {
       setErrorMessage(`英単語は${MAX_WORD_LENGTH}文字以内で入力してください。`);
@@ -109,6 +109,7 @@ export default function WordRegisterPage() {
     // 日本語混入チェック（半角英字・スペース・ハイフン・アポストロフィのみ許容）
     // ひらがな・カタカナ・漢字・全角文字が含まれている場合は false になります。
     const englishPattern = /^[a-zA-Z\s\-']+$/;
+    // someってなんや「1つでも条件に合うものがあるか？」を判定する、配列の標準機能だ。
     const hasInvalidChar = words.some((w) => !englishPattern.test(w.english.trim()));
     if (hasInvalidChar) {
       setErrorMessage('英語欄には半角英字のみを入力してください（日本語は含められません）。');
@@ -118,7 +119,7 @@ export default function WordRegisterPage() {
     return true;
   };
 
-  // 「翻訳を取得」ボタンの処理です。モックAPI（/api/mocks/words/translate）と通信します。
+  // 「翻訳を取得」ボタンの処理です。本番API（POST /api/words/translate）と通信します。
   const handleFetchTranslations = async (): Promise<void> => {
     // 送信前にバリデーションを実施
     if (!validateEnglishInputs()) return;
@@ -130,14 +131,14 @@ export default function WordRegisterPage() {
     // 小文字に統一し、前後の空白を除去し、API用のデータ形式へ整えます。
     const englishWordList = words.map((w) => w.english.trim().toLowerCase());
 
-    // モックAPI仕様書に合わせたリクエストボディ { words: string[] }
+    // 本番API仕様書に合わせたリクエストボディ { words: string[] }
     const requestBody = {
       words: englishWordList,
     };
 
     try {
-      // 提供されたモックAPIへPOSTリクエストを送信します。
-      const response = await fetch('/api/mocks/words/translate', {
+      // 本番AI翻訳APIへPOSTリクエストを送信
+      const response = await fetch('/api/words/translate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -145,27 +146,18 @@ export default function WordRegisterPage() {
         body: JSON.stringify(requestBody),
       });
 
-      if (!response.ok) {
-        throw new Error('翻訳候補の取得に失敗しました');
-      }
-
-      // レスポンスの受け取り { translations: [{ english: "...", options: [...] }] }
       const data = await response.json();
 
-      // ==========================================
-      // 【検証用アラート：翻訳取得】不要になったらここをコメントアウト
-      alert(
-        `【翻訳取得 API通信 成功！】\n\n` +
-        `▼ バックエンドへ送信したデータ:\n${JSON.stringify(requestBody, null, 2)}\n\n` +
-        `▼ バックエンドから返ってきた翻訳候補:\n${JSON.stringify(data, null, 2)}`
-      );
-      // ==========================================
+      if (!response.ok) {
+        throw new Error(data.error || '翻訳候補の取得に失敗しました');
+      }
 
+      // レスポンス受け取り { translations: [{ english: "...", options: [...] }] }
       // APIから返ってきた候補を、画面の各入力行（words）に反映します。
       setWords((prevWords) =>
         prevWords.map((word) => {
           // 入力された英語と一致する候補結果を探します。
-          const matched = data.translations.find(
+          const matched = data.translations?.find(
             (item: { english: string; options: string[] }) =>
               item.english.toLowerCase() === word.english.trim().toLowerCase()
           );
@@ -182,17 +174,17 @@ export default function WordRegisterPage() {
           };
         })
       );
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
       // 失敗時はユーザーに通知し、そのまま再試行できるようにします。
-      setErrorMessage('翻訳の取得に失敗しました。もう一度「翻訳を取得」を押して再試行してください。');
+      setErrorMessage(error.message || '翻訳の取得に失敗しました。もう一度「翻訳を取得」を押して再試行してください。');
     } finally {
       setIsLoading(false);
     }
   };
 
-  // 「この単語で登録する」ボタンの処理です。現在は登録APIの代わりに確認表示をします。
-  const handleRegisterSubmit = (): void => {
+  // 「この単語で登録する」ボタンの処理です。本番API（POST /api/words）にデータを送信します。
+  const handleRegisterSubmit = async (): Promise<void> => {
     // 日本語訳が未選択の行がないかチェック（プルダウンを選んでいない行を防止）
     const isMissingJapanese = words.some((w) => w.japanese.trim() === '');
     if (isMissingJapanese) {
@@ -212,8 +204,9 @@ export default function WordRegisterPage() {
     }
 
     setErrorMessage('');
+    setIsLoading(true);
 
-    // 【仕様変更対応】RegisterWordsRequest の型定義に準拠したデータ構造を作成
+    // RegisterWordsRequest の型定義に準拠したデータ構造を作成
     // WordInput[] の形式に整形
     const formattedWords = validWords.map(({ english, japanese }) => ({
       english: english.trim(),
@@ -221,29 +214,36 @@ export default function WordRegisterPage() {
     }));
 
     // RegisterWordsRequest { userId: number; words: WordInput[] } を構築
+    // 一つ上のブロックで作った配列と、IDを会わせて、JSONにして送っている★★★★★★★★
     const registerPayload = {
       userId: DEFAULT_USER_ID,
       words: formattedWords,
     };
 
-    // 除外された単語があるかどうかの判定
-    const excludedCount = words.length - validWords.length;
-    const noticeText = excludedCount > 0
-      ? `※「辞書に登録されていません」の${excludedCount}件を除外して登録します。\n\n`
-      : '';
+    try {
+      // 本番の単語登録API（POST /api/words）に送信
+      const response = await fetch('/api/words', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(registerPayload),
+      });
 
-    // ==========================================
-    // 【検証用アラート：単語登録】不要になったらここをコメントアウト
-    alert(
-      `【単語登録 API通信（モック）】\n\n` +
-      noticeText +
-      `▼ バックエンドへ送信する登録データ (指定仕様: RegisterWordsRequest):\n${JSON.stringify(registerPayload, null, 2)}\n\n` +
-      `※この後、一覧画面（/lists）へ遷移します`
-    );
-    // ==========================================
+      const data = await response.json();
 
-    // 登録処理が終わった想定で、単語一覧画面へ移動します。
-    router.push('/lists');
+      if (!response.ok) {
+        throw new Error(data.error || '単語の登録に失敗しました');
+      }
+
+      // 登録成功時は、単語一覧画面（/lists）へ遷移します。
+      router.push('/lists');
+    } catch (error: any) {
+      console.error(error);
+      setErrorMessage(error.message || '登録処理中にエラーが発生しました。もう一度お試しください。');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // 画面下部に表示するボタンの状態を決めるための判定です。
@@ -278,6 +278,7 @@ export default function WordRegisterPage() {
               item={item}
               index={index}
               // 2行以上あるときだけ削除ボタンを表示します。
+              // indexは、子コンポの番号★★★★★★★★★★
               canDelete={words.length > 1}
               // 子コンポーネントで起きた変更を、親の関数で処理します。
               onEnglishChange={handleEnglishChange}
@@ -335,6 +336,7 @@ export default function WordRegisterPage() {
           <button
             type="button"
             // 全行の日本語訳が選択されていなければ、登録処理を実行できません。
+            // 日本語のプルダウンメニューを全部選び終わるまで、登録ボタンを灰色にしておく条件分岐
             disabled={!isAllJapaneseSelected || isLoading}
             onClick={handleRegisterSubmit}
             className={`w-full py-3 font-bold rounded-xl text-sm transition-colors ${
@@ -343,7 +345,7 @@ export default function WordRegisterPage() {
                 : 'bg-stone-200 text-stone-400 cursor-not-allowed'
             }`}
           >
-            この単語で登録する
+            {isLoading ? '登録中...' : 'この単語で登録する'}
           </button>
         )}
       </div>
