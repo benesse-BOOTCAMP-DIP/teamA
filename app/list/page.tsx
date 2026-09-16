@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import type { MocksResponse, Word } from "@/app/api/mocks/words/route";
 import styles from "./page.module.css";
-import { mock } from "node:test";
 
 type Tab = "story" | "word";
 
@@ -29,16 +28,15 @@ export default function Tabs() {
 
   useEffect(() => {
     async function getMockData() {
-      const response = await fetch("/api/mocks/words");
+      const response = await fetch("/api/words?userId=1");
 
       if (!response.ok) {
-        // throw new Error("モックデータの取得に失敗しました");
         alert("モックデータの取得に失敗しました");
       }
 
       const data: MocksResponse = await response.json();
 
-      //英単語の取得
+      //同じ英単語の意味を配列に保持
       const groupedWords = data.words.reduce<GroupedWord[]>((result, word) => {
         const existingWord = result.find(
           (item) => item.word_id === word.word_id
@@ -55,7 +53,7 @@ export default function Tabs() {
         }
 
         return result;
-    }, []);
+      }, []);
 
       setWords(groupedWords);
 
@@ -67,22 +65,26 @@ export default function Tabs() {
   }, []);
 
 
-  console.log(words);
+  
   return (
     <div className="container">
       <div className={`${styles.tabs} ${styles.boxCenter}`}>
-        <button className={styles.tab} onClick={() => setActiveTab("story")}>
+        <button  className={`${styles.tab} ${
+      activeTab === "story" ? styles.active : ""
+    }`} onClick={() => setActiveTab("story")}>
           物語
         </button>
 
-        <button className={styles.tab} onClick={() => setActiveTab("word")}>
+        <button className={`${styles.tab} ${
+      activeTab === "word" ? styles.active : ""
+    }`} onClick={() => setActiveTab("word")}>
           単語
         </button>
       </div>
 
       <div>
         {activeTab === "story" && (
-          <div>
+          <div className={styles.story}>
             {stories.map((story) => (
               <div key={story.id}>
                 <h3>{story.title}</h3>

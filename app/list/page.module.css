@@ -1,67 +1,35 @@
-
 :root {
-  /* 1. ベースカラー（背景：真っ白を避けた、目にやさしい紙・アイボリー調） */
-  --color-bg-base: #fafaf9;          /* Tailwind: stone-50 相当 */
-  --color-bg-surface: #ffffff;       /* カードや枠の内側 */
+  /* 1. ベースカラー */
+  --color-bg-base: #fafaf9;
+  --color-bg-surface: #ffffff;
 
-  /* 2. メインカラー（操作系：視認性が高く、色覚に依存しにくい落ち着いた青） */
-  --color-primary: #0284c7;          /* Tailwind: sky-600 相当 */
-  --color-primary-hover: #0369a1;    /* ボタンホバー時: sky-700 相当 */
-  --color-primary-text: #ffffff;     /* ボタン内の文字色 */
+  /* 2. メインカラー */
+  --color-primary: #0284c7;
+  --color-primary-hover: #0369a1;
+  --color-primary-text: #ffffff;
 
-  /* 3. アクセント / ハイライト（重要単語：色覚特性でも見えやすく、文字がつぶれない淡い黄色） */
-  --color-highlight-bg: #fef3c7;     /* 単語背景: amber-100 相当 */
-  --color-highlight-border: #f59e0b; /* 単語の下線: amber-500 相当（下線で形でも認識させる） */
-  --color-highlight-text: #1c1917;   /* 単語文字色: stone-900 相当（コントラスト比を確保） */
+  /* 3. アクセント / ハイライト */
+  --color-highlight-bg: #fef3c7;
+  --color-highlight-border: #f59e0b;
+  --color-highlight-text: #1c1917;
 
-  /* 4. 基本テキスト・枠線（真っ黒を避けた温かみのあるチャコール） */
-  --color-text-main: #292524;        /* 本文文字色: stone-800 相当 */
-  --color-text-sub: #78716c;         /* 補足文字色: stone-500 相当 */
-  --color-border: #e7e5e4;           /* 枠線: stone-200 相当 */
+  /* 4. 基本テキスト・枠線 */
+  --color-text-main: #292524;
+  --color-text-sub: #78716c;
+  --color-border: #e7e5e4;
 }
 
-
-/* 画面サイズ */
-/* .container{
-    max-width: 393px;
-    min-height: 100vh;
-} */
-
-/* 共通 */
-/* .boxCenter{
-    display: flex;
-    justify-content: center;
-} */
-
-/* タブ切り替え */
-/* .tab{
-    width: 30%;
-} */
-
-/* 単語一覧 */
-/* .wordTable {
-  width: 100%;
-  table-layout: fixed;
-}
-
-.tableRow{
-    width: 30%;
-}
-.textCenter{
-    text-align: center;
-} */
 
 /* ========================================
    1. コンテナ・全体レイアウト
-   登録画面（stone-50, py-8 px-4, 393px幅）とデザインを統一
    ======================================== */
 :global(.container) {
   max-width: 393px;
   min-height: 100vh;
   margin: 0 auto;
   padding: 32px 16px;
-  background-color: #fafaf9; /* stone-50 */
-  color: #292524;            /* stone-800 */
+  background-color: var(--color-bg-base);
+  color: var(--color-text-main);
   box-sizing: border-box;
 }
 
@@ -71,73 +39,81 @@
   align-items: center;
 }
 
+
 /* ========================================
    2. タブ切り替え
-   登録画面のボタン（rounded-xl, font-bold, text-sm）とトーンを統一
    ======================================== */
 .tabs {
   display: flex;
-  gap: 8px;
-  margin-bottom: 24px;
 }
 
 .tab {
   flex: 1;
   padding: 10px 16px;
-  font-size: 0.875rem; /* text-sm (14px) */
-  font-weight: 700;    /* font-bold */
-  color: #78716c;      /* stone-500 */
-  background-color: #ffffff;
-  border: 1px solid #e7e5e4; /* stone-200 */
-  border-radius: 12px;       /* rounded-xl */
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--color-text-sub);
+  background-color: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+  border-bottom:1px solid var(--color-primary);
+   clip-path: polygon(
+    8% 0,
+    92% 0,
+    100% 100%,
+    0 100%
+  );
   cursor: pointer;
   transition: all 0.15s ease-in-out;
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* shadow-sm */
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 }
 
-.tab:hover {
-  border-color: #d6d3d1; /* stone-300 */
-  background-color: #fafaf9; /* stone-50 */
-  color: #292524;        /* stone-800 */
-}
-
-.tab:active {
-  background-color: #0284c7; /* sky-600 */
-  color: #ffffff;
-  border-color: #0284c7;
+.tab.active {
+  background-color: var(--color-primary);
+  color: var(--color-primary-text);
+  border-color: var(--color-primary);
 }
 
 /* ========================================
-   3. 単語テーブル（カード調デザイン）
-   登録画面のカード（rounded-2xl, border-stone-200, shadow-sm）と同期
+   3. 物語
+   ======================================== */
+.story{
+  border: 1px solid var(--color-border);
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  background-color: var(--color-bg-surface);
+  /* border-radius: 16px; */
+  padding: 12px 16px;
+}
+
+/* ========================================
+   3. 単語テーブル
    ======================================== */
 .wordTable {
   width: 100%;
   table-layout: fixed;
   border-collapse: separate;
   border-spacing: 0;
-  background-color: #ffffff;
-  border-radius: 16px;       /* rounded-2xl */
+  background-color: var(--color-bg-surface);
+  /* border-radius: 16px; */
   overflow: hidden;
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* shadow-sm */
-  border: 1px solid #e7e5e4; /* stone-200 */
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--color-border);
 }
 
 .wordTable th {
-  background-color: #fafaf9; /* stone-50 */
-  color: #78716c;            /* stone-500 */
+  background-color: var(--color-bg-base);
+  color: var(--color-text-sub);
   font-weight: 700;
-  font-size: 0.875rem;       /* text-sm */
+  font-size: 0.875rem;
   padding: 12px 16px;
-  border-bottom: 1px solid #e7e5e4;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .wordTable td {
   padding: 12px 16px;
-  border-bottom: 1px solid #e7e5e4;
+  border-bottom: 1px solid var(--color-border);
   vertical-align: middle;
-  font-size: 0.875rem;       /* text-sm */
-  color: #292524;            /* stone-800 */
+  font-size: 0.875rem;
+  color: var(--color-text-main);
 }
 
 .wordTable tbody tr:last-child td {
@@ -145,7 +121,7 @@
 }
 
 .wordTable tbody tr:hover {
-  background-color: #f5f5f4; /* stone-100 */
+  background-color: #f5f5f4;
 }
 
 .tableRow {
@@ -158,13 +134,13 @@
 
 .wordTable td:first-child {
   font-weight: 600;
-  color: #292524;
+  color: var(--color-text-main);
 }
 
 .wordTable td p {
   margin: 2px 0;
   line-height: 1.4;
-  color: #292524;
+  color: var(--color-text-main);
 }
 
 .wordTable td p:first-child {
