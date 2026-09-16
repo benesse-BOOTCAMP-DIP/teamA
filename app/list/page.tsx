@@ -27,7 +27,7 @@ export default function Tabs() {
   const [stories,setStories]=useState<Story[]>([]);
 
   useEffect(() => {
-    async function getMockData() {
+    async function getData() {
       const response = await fetch("/api/words?userId=1");
 
       if (!response.ok) {
@@ -61,7 +61,7 @@ export default function Tabs() {
       setStories(data.stories);
     }
 
-    getMockData();
+    getData();
   }, []);
 
 
@@ -87,8 +87,8 @@ export default function Tabs() {
           <div className={styles.story}>
             {stories.map((story) => (
               <div key={story.id}>
-                <h3>{story.title}</h3>
-                <p>{story.content}</p>
+                <h3 className={styles.title}>{story.title}</h3>
+                <p className={styles.content}>{story.content}</p>
               </div>
             ))}
           </div>
