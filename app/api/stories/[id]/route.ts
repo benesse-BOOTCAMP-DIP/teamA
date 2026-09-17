@@ -54,7 +54,6 @@ export async function GET(
       .maybeSingle();
 
     if (storyError) {
-      console.error("stories 取得エラー:", storyError);
       return NextResponse.json(
         { error: "物語詳細の取得処理中に予期せぬエラーが発生しました" },
         { status: 500 },
@@ -89,7 +88,6 @@ export async function GET(
       .eq("story_id", storyId);
 
     if (relationsError) {
-      console.error("meaning_story 取得エラー:", relationsError);
       return NextResponse.json(
         { error: "物語詳細の取得処理中に予期せぬエラーが発生しました" },
         { status: 500 },
@@ -127,7 +125,6 @@ export async function GET(
 
     return NextResponse.json(responseData, { status: 200 });
   } catch (err) {
-    console.error("物語詳細取得で予期せぬエラー:", err);
     return NextResponse.json(
       { error: "物語詳細の取得処理中に予期せぬエラーが発生しました" },
       { status: 500 },
