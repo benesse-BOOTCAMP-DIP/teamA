@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import type { WordsListResponse } from "@/app/api/words/route";
 import styles from "./page.module.css";
 
@@ -86,12 +87,16 @@ export default function Tabs() {
         </button>
       </div>
 
+  
       <div>
         {activeTab === "story" && (
           <div className={styles.story}>
             {stories.map((story) => (
               <div key={story.id}>
-                <h3 className={styles.title}>{story.title}</h3>
+                {/* <h3 className={styles.title}>{story.title}</h3> */}
+                <Link href={`/list/${story.id}`}>
+                  <h3 className={styles.title}>{story.title}</h3>
+                </Link>
                 <p className={styles.content}>{story.content}</p>
               </div>
             ))}
