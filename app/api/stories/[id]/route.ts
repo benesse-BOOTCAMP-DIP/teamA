@@ -20,7 +20,7 @@ export interface StoryDetailResponse {
   story: string;
   japaneseStory: string;
   createdAt: string;
-  words: StoryDetailWord[];
+  words: StoryDetailWord[]; //物語に含まれる単語と活用形のリスト
 }
 
 /**
@@ -29,7 +29,7 @@ export interface StoryDetailResponse {
  */
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     // 1. パスパラメータから id を取得してバリデーション
@@ -39,7 +39,7 @@ export async function GET(
     if (isNaN(storyId) || storyId <= 0) {
       return NextResponse.json(
         { error: "有効な物語ID（数値）を指定してください" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -57,7 +57,7 @@ export async function GET(
       console.error("stories 取得エラー:", storyError);
       return NextResponse.json(
         { error: "物語詳細の取得処理中に予期せぬエラーが発生しました" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -65,14 +65,15 @@ export async function GET(
     if (!storyData) {
       return NextResponse.json(
         { error: "指定された物語が見つかりません" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
     // 4. meaning_story テーブルから関連する単語と表記ゆれ（活用形）を取得
     const { data: relationsData, error: relationsError } = await supabase
       .from("meaning_story")
-      .select(`
+      .select(
+        `
         meaning_id,
         surfaces,
         meanings (
@@ -83,14 +84,15 @@ export async function GET(
             word
           )
         )
-      `)
+      `,
+      )
       .eq("story_id", storyId);
 
     if (relationsError) {
       console.error("meaning_story 取得エラー:", relationsError);
       return NextResponse.json(
         { error: "物語詳細の取得処理中に予期せぬエラーが発生しました" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -128,7 +130,7 @@ export async function GET(
     console.error("物語詳細取得で予期せぬエラー:", err);
     return NextResponse.json(
       { error: "物語詳細の取得処理中に予期せぬエラーが発生しました" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
