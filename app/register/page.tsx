@@ -254,8 +254,18 @@ export default function WordRegisterPage() {
         throw new Error(data.error || '単語の登録に失敗しました');
       }
 
-      // 登録成功時は、単語一覧画面（/list）へ遷移します。
-      router.push('/list');
+      // 今回の登録結果だけを保存し、物語生成では過去の登録単語を使わないようにします。
+      const savedWords = Array.isArray(data.data) ? data.data : [];
+      if (savedWords.length === 0) {
+        throw new Error('登録された単語データを取得できませんでした');
+      }
+      sessionStorage.setItem('latestRegisteredWords', JSON.stringify(savedWords));
+
+      // 登録成功時は、登録された単語の meaning_id をクエリに持たせて物語生成画面（/stories/new）へ遷移します。
+      const meaningIds = savedWords
+        .map((item: { meaning_id: number }) => item.meaning_id)
+        .join(',');
+      router.push(meaningIds ? `/stories/new?meaningIds=${meaningIds}` : '/stories/new');
     } catch (error: unknown) {
       console.error(error);
       const message = error instanceof Error ? error.message : '';
@@ -313,9 +323,9 @@ export default function WordRegisterPage() {
           type="button"
           disabled={isLoading}
           onClick={handleAddRow}
-          className={`w-full py-2.5 mb-5 border-2 border-dashed rounded-xl font-bold flex items-center justify-center gap-1.5 text-sm transition-colors ${isLoading
-            ? 'border-stone-200 text-stone-300 bg-stone-50 cursor-not-allowed'
-            : 'border-stone-300 text-stone-600 hover:bg-stone-50 hover:border-stone-400 cursor-pointer'
+              className={`w-full py-2.5 mb-5 border-2 border-dashed rounded-xl font-bold flex items-center justify-center gap-1.5 text-sm transition-colors ${isAllOptionsGenerated || isLoading
+              ? 'border-stone-200 text-stone-300 bg-stone-50 cursor-not-allowed'
+                : 'border-stone-300 text-stone-600 hover:bg-stone-50 hover:border-stone-400 cursor-pointer'
             }`}
         >
           <span className="text-base leading-none">＋</span>
