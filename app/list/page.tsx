@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import type { WordsListResponse } from "@/app/api/words/route";
 import styles from "./page.module.css";
 
@@ -86,6 +87,9 @@ export default function Tabs() {
   
   return (
     <div className="container">
+      <Link href="/register">
+        <p>物語登録画面へ</p>
+      </Link>
       <div className={styles.boxCenter}>
         <input
           className={styles.searchInput}
@@ -109,13 +113,17 @@ export default function Tabs() {
         </button>
       </div>
 
+  
       <div>
         {activeTab === "story" && (
           <div className={styles.story}>
             {filteredStories.map((story) => (
-              <div key={story.id} className={styles.content}>
-                <h3 className={styles.title}>{story.title}</h3>
-                <p className={styles.storyText}>{story.content}</p>
+              <div key={story.id}className={`${styles.content} ${styles.storyContainer}`} >
+                 <Link href={`/list/${story.id}`}>
+                     <h3 className={styles.title}>{story.title}</h3>                         
+                     <p className={styles.storyText}>{story.content}</p>
+                 </Link>
+                 <h3 className={styles.titleLink}>＞</h3>
               </div>
             ))}
           </div>

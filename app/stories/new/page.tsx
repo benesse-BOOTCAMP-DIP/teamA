@@ -268,7 +268,7 @@ export default function StoryGeneratorPage() {
                 disabled={isSaving}
                 className="w-full py-3 bg-stone-800 text-white hover:bg-stone-900 font-bold rounded-xl text-sm transition shadow-sm"
               >
-                {isSaving ? '登録中...' : '一覧画面で確認する'}
+                {isSaving ? '保存中...' : '物語を保存する'}
               </button>
             </div>
           </>
