@@ -24,6 +24,15 @@ export interface StoryDetailResponse {
 }
 
 /**
+ * 物語削除レスポンスボディの型定義
+ */
+export interface DeleteStoryResponse {
+  success: boolean;
+  message?: string;
+  error?: string;
+}
+
+/**
  * GET /api/stories/[id]
  * 指定された物語の詳細情報（本文、和訳、含まれる単語一覧・活用形）を取得するAPI
  */
@@ -131,3 +140,93 @@ export async function GET(
     );
   }
 }
+
+/**
+ * DELETE /api/stories/[id]
+ * 指定された物語を削除するAPI
+ */
+export async function DELETE(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  try {
+    // 1. パスパラメータから id を取得してバリデーション
+    const { id } = await params;
+    const storyId = Number(id);
+
+    if (isNaN(storyId) || storyId <= 0) {
+      return NextResponse.json(
+        { error: "有効な物語ID（数値）を指定してください" },
+        { status: 400 },
+      );
+    }
+
+    // 2. Supabase クライアントの初期化
+    const supabase = await createClient();
+
+    // 3. 対象の物語が存在するか確認
+    const { data: storyData, error: storyCheckError } = await supabase
+      .from("stories")
+      .select("story_id")
+      .eq("story_id", storyId)
+      .maybeSingle();
+
+    if (storyCheckError) {
+      console.error("物語確認エラー:", storyCheckError);
+      return NextResponse.json(
+        { error: "物語の削除処理中に予期せぬエラーが発生しました" },
+        { status: 500 },
+      );
+    }
+
+    if (!storyData) {
+      return NextResponse.json(
+        { error: "指定された物語が見つかりません" },
+        { status: 404 },
+      );
+    }
+
+    // 4. meaning_story 中間テーブルの紐付けを削除
+    const { error: relationError } = await supabase
+      .from("meaning_story")
+      .delete()
+      .eq("story_id", storyId);
+
+    if (relationError) {
+      console.error("meaning_story 削除エラー:", relationError);
+      return NextResponse.json(
+        { error: "物語の削除処理中に予期せぬエラーが発生しました" },
+        { status: 500 },
+      );
+    }
+
+    // 5. stories テーブルのレコードを削除
+    const { error: storyDeleteError } = await supabase
+      .from("stories")
+      .delete()
+      .eq("story_id", storyId);
+
+    if (storyDeleteError) {
+      console.error("stories 削除エラー:", storyDeleteError);
+      return NextResponse.json(
+        { error: "物語の削除処理中に予期せぬエラーが発生しました" },
+        { status: 500 },
+      );
+    }
+
+    // 6. 成功レスポンスを返却
+    const responseData: DeleteStoryResponse = {
+      success: true,
+      message: "物語を削除しました",
+    };
+
+    return NextResponse.json(responseData, { status: 200 });
+  } catch (err) {
+    console.error("物語削除予期せぬエラー:", err);
+    return NextResponse.json(
+      { error: "物語の削除処理中に予期せぬエラーが発生しました" },
+      { status: 500 },
+    );
+  }
+}
+

@@ -87,7 +87,6 @@ export async function POST(request: Request) {
       .single();
 
     if (storyError || !storyData) {
-      console.error("stories 登録エラー:", storyError);
       return NextResponse.json(
         { error: "物語の登録処理中に予期せぬエラーが発生しました" },
         { status: 500 },
@@ -107,7 +106,6 @@ export async function POST(request: Request) {
         .insert(relationRecords);
 
       if (relationError) {
-        console.error("meaning_story 登録エラー:", relationError);
         // データ不整合（孤立レコード）を防ぐため、作成した story を削除してロールバック
         await supabase
           .from("stories")
@@ -133,7 +131,6 @@ export async function POST(request: Request) {
 
     return NextResponse.json(responseData, { status: 200 });
   } catch (err) {
-    console.error("予期せぬエラー:", err);
     return NextResponse.json(
       { error: "物語の登録処理中に予期せぬエラーが発生しました" },
       { status: 500 },
