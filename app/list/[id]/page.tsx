@@ -45,9 +45,12 @@ export default function StoryDetailPages() {
       {story && (
         <div>
           <DetailStoryEnglishView title={story.title} story={story.story} words={story.words} />
-          <button onClick={() => setIsJapaneseVisible(!isJapaneseVisible)} >
-             {isJapaneseVisible ? "和訳を閉じる　▲" : "和訳を見る　▼"} 
-          </button> {isJapaneseVisible && ( 
+          <div className={styles.boxCenter}>
+             <button className="bg-white rounded-2xl p-3 shadow-sm border border-stone-200 mb-3 w-full"  onClick={() => setIsJapaneseVisible(!isJapaneseVisible)} >
+              {isJapaneseVisible ? "和訳を閉じる　▲" : "和訳を見る　▼"} 
+            </button> 
+          </div>
+          {isJapaneseVisible && ( 
             <div>
               <StoryJapaneseViews japaneseStory={story.japaneseStory} words={story.words}/>
             </div> 

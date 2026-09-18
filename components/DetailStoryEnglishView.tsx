@@ -66,37 +66,39 @@ export default function DetailStoryEnglishView({
   };
 
   return (
-    <div className="bg-white rounded-2xl p-6 shadow-sm border border-stone-200 mb-6">
+    <div>
       {/* 物語タイトル */}
-      <h2 className="text-xl font-bold text-stone-800 mb-4 pb-2 border-b border-stone-100 flex items-center gap-2">
-        <span className="text-sky-600">📖</span>
-        {title || '無題の物語'}
-      </h2>
+      <h1 className="text-xl font-bold bg-white rounded-2xl p-6 shadow-sm border border-stone-200 mb-3 flex items-center gap-2">
+        <span className="text-sky-600 leading-none">📖</span>
+        {title || "無題の物語"}
+      </h1>
 
-      {/* ハイライト付き英文本文 */}
-      <div className="bg-stone-50 rounded-xl p-5 border border-stone-100">
-        <p className="text-base sm:text-lg leading-relaxed text-stone-700 font-serif whitespace-pre-wrap">
-          {renderHighlightedStory()}
-        </p>
-      </div>
-
-      {/* 登場単語のタグ一覧 */}
-      {words.length > 0 && (
-        <div className="mt-4 pt-3 flex flex-wrap items-center gap-2">
-          <span className="text-xs font-semibold text-stone-400">対象単語:</span>
-          {words.map((item) => (
-            <span
-              key={item.meaningId}
-              className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-sky-50 text-sky-700 border border-sky-100"
-            >
-              {item.english}
-              {item.surfaces?.[0] && item.surfaces[0].toLowerCase() !== item.english.toLowerCase() && (
-                <span className="text-sky-400 ml-1">({item.surfaces[0]})</span>
-              )}
-            </span>
-          ))}
+      <div className="bg-white rounded-2xl p-6 shadow-sm border border-stone-200 mb-3">
+          {/* ハイライト付き英文本文 */}
+        <div className="bg-stone-50 rounded-xl p-5 border border-stone-100">
+          <p className="text-base sm:text-lg leading-relaxed text-stone-700 font-serif whitespace-pre-wrap">
+            {renderHighlightedStory()}
+          </p>
         </div>
-      )}
+
+        {/* 登場単語のタグ一覧 */}
+        {words.length > 0 && (
+          <div className="mt-4 pt-3 flex flex-wrap items-center gap-2">
+            <span className="text-xs font-semibold text-stone-400">対象単語:</span>
+            {words.map((item) => (
+              <span
+                key={item.meaningId}
+                className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-sky-50 text-sky-700 border border-sky-100"
+              >
+                {item.english}
+                {item.surfaces?.[0] && item.surfaces[0].toLowerCase() !== item.english.toLowerCase() && (
+                  <span className="text-sky-400 ml-1">({item.surfaces[0]})</span>
+                )}
+              </span>
+            ))}
+          </div>
+        )}
+        </div>
     </div>
   );
 }
