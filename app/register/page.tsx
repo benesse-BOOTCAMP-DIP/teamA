@@ -65,8 +65,7 @@ export default function WordRegisterPage() {
 
   // 「行を追加する」ボタンが押されたときの処理です。
   const handleAddRow = (): void => {
-    // 翻訳取得後は新しい行を追加できないようガードを入れます。
-    if (hasOptionsGenerated) return;
+    if (isLoading) return;
     if (errorMessage) setErrorMessage('');//一旦エラーを消して。
 
     // Date.now() は現在時刻を数字で返します。
@@ -109,7 +108,6 @@ export default function WordRegisterPage() {
     // 日本語混入チェック（半角英字・スペース・ハイフン・アポストロフィのみ許容）
     // ひらがな・カタカナ・漢字・全角文字が含まれている場合は false になります。
     const englishPattern = /^[a-zA-Z\s\-']+$/;
-    // someってなんや「1つでも条件に合うものがあるか？」を判定する、配列の標準機能だ。
     const hasInvalidChar = words.some((w) => !englishPattern.test(w.english.trim()));
     if (hasInvalidChar) {
       setErrorMessage('英語欄には半角英字のみを入力してください（日本語は含められません）。');
@@ -154,6 +152,11 @@ export default function WordRegisterPage() {
 
       // レスポンス受け取り { translations: [{ english: "...", options: [...] }] }
       // APIから返ってきた候補を、画面の各入力行（words）に反映します。
+      const hasNotFound = data.translations?.some(
+        (item: { options: string[] }) =>
+          item.options?.length === 1 && item.options[0] === NOT_FOUND_TEXT
+      );
+
       setWords((prevWords) =>
         prevWords.map((word) => {
           // 入力された英語と一致する候補結果を探します。
@@ -162,18 +165,32 @@ export default function WordRegisterPage() {
               item.english.toLowerCase() === word.english.trim().toLowerCase()
           );
 
-          const options = matched ? matched.options : [];
-          // もし選択肢が「辞書に登録されていません」1つだけなら、初期値としてそれをセットしておきます。
-          const isNotFoundOnly = options.length === 1 && options[0] === NOT_FOUND_TEXT;
+          let options = matched ? matched.options : [];
+          let nextJapanese = '';
+
+          if (options.length === 1 && options[0] === NOT_FOUND_TEXT) {
+            // NOT_FOUND_TEXT だけが届いた場合は候補に入れず空にします
+            options = [];
+            nextJapanese = '';
+          } else if (word.japanese && options.includes(word.japanese)) {
+            // 以前の選択がまだ使えるならそれを維持
+            nextJapanese = word.japanese;
+          } else {
+            // どちらでもなければ空文字にする
+            nextJapanese = '';
+          }
 
           return {
             ...word,
-            // 見つかった場合は options 配列をセット、なければ空配列にします。
             japaneseOptions: options,
-            japanese: isNotFoundOnly ? NOT_FOUND_TEXT : '',
+            japanese: nextJapanese,
           };
         })
       );
+
+      if (hasNotFound) {
+        setErrorMessage('単語が見つかりませんでした。一般的でないか、スペルミスの可能性があります。');
+      }
     } catch (error: unknown) {
       console.error(error);
       // 失敗時はユーザーに通知し、そのまま再試行できるようにします。
@@ -259,9 +276,11 @@ export default function WordRegisterPage() {
   };
 
   // 画面下部に表示するボタンの状態を決めるための判定です。
-  // some は「1つでも条件に合う要素があるか」、every は「全要素が条件に合うか」を調べます。
-  // 翻訳候補が1つでもあれば、次の操作を「登録」に切り替えます。
-  const hasOptionsGenerated = words.some((w) => w.japaneseOptions.length > 0);
+  // すべての行で翻訳候補が生成されているかを判定します。
+  // 1行でも japaneseOptions が空の行（編集された行や新規追加行）があれば false になり、「翻訳を取得」ボタンに戻ります。
+  const isAllOptionsGenerated =
+    words.length > 0 && words.every((w) => w.japaneseOptions.length > 0);
+
   // 英語が1つでも入力されていれば、翻訳取得ボタンを押せるようにします。
   const hasEnglishInput = words.some((w) => w.english.trim() !== '');
   // すべての行で日本語訳が選択されていれば、登録ボタンを押せるようにします。
@@ -290,7 +309,6 @@ export default function WordRegisterPage() {
               item={item}
               index={index}
               // 2行以上あるときだけ削除ボタンを表示します。
-              // indexは、子コンポの番号★★★★★★★★★★
               canDelete={words.length > 1}
               // 子コンポーネントで起きた変更を、親の関数で処理します。
               onEnglishChange={handleEnglishChange}
@@ -300,12 +318,12 @@ export default function WordRegisterPage() {
           ))}
         </div>
 
-        {/* 行追加ボタン：翻訳取得後は押せないように disabled かつグレーアウトにします。 */}
+        {/* 行追加ボタン：通信中以外はいつでも行を追加できます。 */}
         <button
           type="button"
-          disabled={hasOptionsGenerated || isLoading}
+          disabled={isLoading}
           onClick={handleAddRow}
-              className={`w-full py-2.5 mb-5 border-2 border-dashed rounded-xl font-bold flex items-center justify-center gap-1.5 text-sm transition-colors ${hasOptionsGenerated || isLoading
+              className={`w-full py-2.5 mb-5 border-2 border-dashed rounded-xl font-bold flex items-center justify-center gap-1.5 text-sm transition-colors ${isAllOptionsGenerated || isLoading
               ? 'border-stone-200 text-stone-300 bg-stone-50 cursor-not-allowed'
                 : 'border-stone-300 text-stone-600 hover:bg-stone-50 hover:border-stone-400 cursor-pointer'
             }`}
@@ -325,19 +343,19 @@ export default function WordRegisterPage() {
         )}
 
         {/*
-          翻訳候補がまだない間は「翻訳を取得」を表示します。
-          候補ができた後は「この単語で登録する」に切り替えます。
+          すべての行の翻訳候補が揃っていない場合は「翻訳を取得」を表示します。
+          全行の候補が揃った後は「この単語で登録する」に切り替えます。
           メインカラーは sky-600 (#0284c7) / sky-700 (#0369a1) を適用しています。
         */}
-        {!hasOptionsGenerated ? (
+        {!isAllOptionsGenerated ? (
           <button
             type="button"
             // 英語が未入力、または通信中の場合はボタンを押せないようにします。
             disabled={!hasEnglishInput || isLoading}
             onClick={handleFetchTranslations}
             className={`w-full py-3 font-bold rounded-xl text-sm transition-colors ${hasEnglishInput && !isLoading
-                ? 'bg-sky-600 text-white hover:bg-sky-700 shadow-sm cursor-pointer'
-                : 'bg-stone-200 text-stone-400 cursor-not-allowed'
+              ? 'bg-sky-600 text-white hover:bg-sky-700 shadow-sm cursor-pointer'
+              : 'bg-stone-200 text-stone-400 cursor-not-allowed'
               }`}
           >
             {isLoading ? '翻訳を取得中...' : '翻訳を取得'}
@@ -346,12 +364,11 @@ export default function WordRegisterPage() {
           <button
             type="button"
             // 全行の日本語訳が選択されていなければ、登録処理を実行できません。
-            // 日本語のプルダウンメニューを全部選び終わるまで、登録ボタンを灰色にしておく条件分岐
             disabled={!isAllJapaneseSelected || isLoading}
             onClick={handleRegisterSubmit}
             className={`w-full py-3 font-bold rounded-xl text-sm transition-colors ${isAllJapaneseSelected && !isLoading
-                ? 'bg-sky-600 text-white hover:bg-sky-700 shadow-sm cursor-pointer'
-                : 'bg-stone-200 text-stone-400 cursor-not-allowed'
+              ? 'bg-sky-600 text-white hover:bg-sky-700 shadow-sm cursor-pointer'
+              : 'bg-stone-200 text-stone-400 cursor-not-allowed'
               }`}
           >
             {isLoading ? '登録中...' : 'この単語で登録する'}
