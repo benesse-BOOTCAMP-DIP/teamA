@@ -66,7 +66,7 @@ export default function WordInputRow({
           placeholder={`英語 ${index + 1}`}
           // 入力されるたびに、行のIDと新しい文字列を親へ渡します。
           onChange={(e) => onEnglishChange(item.id, e.target.value)}
-          className="w-full px-3 py-2.5 bg-white border border-stone-200 rounded-xl text-stone-800 placeholder-stone-400 focus:outline-none focus:border-sky-600 focus:ring-1 focus:ring-sky-600 shadow-sm text-sm"
+          className="w-full px-3 py-2.5 bg-white border border-stone-200 rounded-xl text-stone-800 placeholder-stone-400 focus:outline-none focus:border-sky-600 focus:ring-1 focus:ring-sky-600 shadow-sm md:text-sm"
         />
 
         {/* 日本語選択欄 */}
