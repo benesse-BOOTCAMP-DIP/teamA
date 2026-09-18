@@ -57,21 +57,16 @@ export default function WordInputRow({
       <div className="flex-1 grid grid-cols-2 gap-2 min-w-0">
 
 
-        {/* 英語入力欄 */}
+        {/* 英語入力欄：翻訳候補生成後も常に編集可能です */}
         <input
           type="text"
           maxLength={45}
           // value を item.english に結び付けることで、親のデータを画面に表示します。
           value={item.english}
           placeholder={`英語 ${index + 1}`}
-          disabled={hasOptions}
           // 入力されるたびに、行のIDと新しい文字列を親へ渡します。
           onChange={(e) => onEnglishChange(item.id, e.target.value)}
-          className={`w-full px-3 py-2.5 border border-stone-200 rounded-xl text-stone-800 placeholder-stone-400 focus:outline-none shadow-sm text-sm ${
-            hasOptions//日本語翻訳候補があるならば、英語の入力欄を灰色でDisableにする。
-              ? 'bg-stone-100 text-stone-500 cursor-not-allowed'
-              : 'bg-white focus:border-sky-600 focus:ring-1 focus:ring-sky-600'
-          }`}
+          className="w-full px-3 py-2.5 bg-white border border-stone-200 rounded-xl text-stone-800 placeholder-stone-400 focus:outline-none focus:border-sky-600 focus:ring-1 focus:ring-sky-600 shadow-sm text-sm"
         />
 
         {/* 日本語選択欄 */}
@@ -104,10 +99,8 @@ export default function WordInputRow({
       </div>
 
       {/* 削除ボタン */}
-{/* 次の2つの条件を両方満たしたときだけ、右側の削除ボタンが出現する。
-canDelete： 最初の1行目じゃない（2行目以降である）。
-!hasOptions： まだ翻訳候補が出ていない（英語の入力中など）。 */}
-      {canDelete && !hasOptions && (
+      {/* 2行目以降（canDelete が true）であれば常に表示します */}
+      {canDelete && (
         <button
           type="button"
           // 削除対象の行IDを親へ渡します。実際の削除は親が行います。
