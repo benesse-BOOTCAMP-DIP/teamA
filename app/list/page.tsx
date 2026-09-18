@@ -113,9 +113,9 @@ export default function Tabs() {
         {activeTab === "story" && (
           <div className={styles.story}>
             {filteredStories.map((story) => (
-              <div key={story.id}>
+              <div key={story.id} className={styles.content}>
                 <h3 className={styles.title}>{story.title}</h3>
-                <p className={styles.content}>{story.content}</p>
+                <p className={styles.storyText}>{story.content}</p>
               </div>
             ))}
           </div>
