@@ -152,6 +152,11 @@ export default function WordRegisterPage() {
 
       // レスポンス受け取り { translations: [{ english: "...", options: [...] }] }
       // APIから返ってきた候補を、画面の各入力行（words）に反映します。
+      const hasNotFound = data.translations?.some(
+        (item: { options: string[] }) =>
+          item.options?.length === 1 && item.options[0] === NOT_FOUND_TEXT
+      );
+
       setWords((prevWords) =>
         prevWords.map((word) => {
           // 入力された英語と一致する候補結果を探します。
@@ -160,15 +165,16 @@ export default function WordRegisterPage() {
               item.english.toLowerCase() === word.english.trim().toLowerCase()
           );
 
-          const options = matched ? matched.options : [];
+          let options = matched ? matched.options : [];
           let nextJapanese = '';
 
-          if (word.japanese && options.includes(word.japanese)) {
+          if (options.length === 1 && options[0] === NOT_FOUND_TEXT) {
+            // NOT_FOUND_TEXT だけが届いた場合は候補に入れず空にします
+            options = [];
+            nextJapanese = '';
+          } else if (word.japanese && options.includes(word.japanese)) {
             // 以前の選択がまだ使えるならそれを維持
             nextJapanese = word.japanese;
-          } else if (options.length === 1 && options[0] === NOT_FOUND_TEXT) {
-            // 候補が「登録されていません」だけならそれをセット
-            nextJapanese = NOT_FOUND_TEXT;
           } else {
             // どちらでもなければ空文字にする
             nextJapanese = '';
@@ -181,6 +187,10 @@ export default function WordRegisterPage() {
           };
         })
       );
+
+      if (hasNotFound) {
+        setErrorMessage('単語が見つかりませんでした。一般的でないか、スペルミスの可能性があります。');
+      }
     } catch (error: unknown) {
       console.error(error);
       // 失敗時はユーザーに通知し、そのまま再試行できるようにします。
