@@ -3,28 +3,11 @@
 import React from 'react';
 import type { StoryDetailWord } from "@/app/api/stories/[id]/route";
 
-// export interface StoryWordInfo {
-//   meaningId: number;
-//   word: string;
-//   surfaces: string[];
-// }
-
-
 interface DetailStoryEnglishViewProps {
   title: string;
   story: string;
   words?: StoryDetailWord[];
 }
-
-
-// interface DetailStoryEnglishViewProps {
-//   storyId: number;
-//   title: string;
-//   story: string;
-//   japaneseStory: string;
-//   createdAt: string;
-//   words: StoryDetailWord[]; //物語に含まれる単語と活用形のリスト
-// }
 
 export default function DetailStoryEnglishView({
   title,
