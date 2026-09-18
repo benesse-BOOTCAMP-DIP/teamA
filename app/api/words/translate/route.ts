@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { GoogleGenAI, Type, type Schema } from "@google/genai";
 
+const NOT_FOUND_TEXT = "辞書に登録されていません";
+
 // 1. クライアントの初期化
 // GEMINI_API_KEY 環境変数を明示的に渡す（設定されていない場合はエラーハンドリング）
 function getGeminiClient(): GoogleGenAI {
@@ -9,6 +11,39 @@ function getGeminiClient(): GoogleGenAI {
     throw new Error("GEMINI_API_KEY が環境変数に設定されていません");
   }
   return new GoogleGenAI({ apiKey });
+}
+
+/**
+ * Datamuse API (https://api.datamuse.com/words) を使用して単語が存在するか確認する関数
+ * @param word 英単語
+ * @returns 存在すれば true、存在しなければ false
+ */
+async function checkWordExistsInDictionary(word: string): Promise<boolean> {
+  try {
+    const trimmedWord = word.trim().toLowerCase();
+    const response = await fetch(
+      `https://api.datamuse.com/words?sp=${encodeURIComponent(trimmedWord)}&max=1`,
+      {
+        method: "GET",
+      },
+    );
+
+    if (!response.ok) {
+      return true; // 通信エラー等の場合はフォールバックとして true
+    }
+
+    const data: { word: string }[] = await response.json();
+
+    // 検索結果に完全一致する英単語が含まれているか確認
+    if (Array.isArray(data) && data.length > 0) {
+      return data.some((item) => item.word.toLowerCase() === trimmedWord);
+    }
+
+    return false;
+  } catch (error) {
+    console.warn(`Datamuse API 確認エラー (${word}):`, error);
+    return true; // ネットワークエラーなどの場合はフォールバックとして true
+  }
 }
 
 /**
@@ -104,7 +139,8 @@ ${wordListText}
 
 /**
  * POST ハンドラー (API Endpoint: POST /api/words/translate)
- * フロントエンドから送信された英単語リストを受け取り、Gemini で意味候補を生成して返す
+ * フロントエンドから送信された英単語リストを受け取り、
+ * Datamuse 辞書APIで単語の実在チェックを行った後、実在する単語のみ Gemini で意味候補を生成して返す
  *
  * Request: JSON { "words": ["spring", "run", "apple"] }
  * Response: JSON { "translations": [ { "english": "spring", "options": ["春", "バネ", "温泉"] } ] }
@@ -133,11 +169,49 @@ export async function POST(request: Request) {
       );
     }
 
-    // 3. Gemini による翻訳候補の生成
-    const result = await generateTranslations(cleanedWords);
+    // 3. Datamuse 辞書APIで全単語の実在チェックを並行実行
+    const checkResults = await Promise.all(
+      cleanedWords.map(async (word) => {
+        const exists = await checkWordExistsInDictionary(word);
+        return { word, exists };
+      }),
+    );
 
-    // 4. 成功レスポンス（200 OK）
-    return NextResponse.json(result);
+    const validWords = checkResults.filter((r) => r.exists).map((r) => r.word);
+    const notFoundSet = new Set(
+      checkResults.filter((r) => !r.exists).map((r) => r.word.toLowerCase()),
+    );
+
+    // 4. 実在する単語があれば Gemini API で翻訳候補を生成
+    let geminiResults: TranslationOption[] = [];
+    if (validWords.length > 0) {
+      const geminiResponse = await generateTranslations(validWords);
+      geminiResults = geminiResponse.translations || [];
+    }
+
+    // 5. 元の単語順序を保持したままレスポンスを作成
+    const finalTranslations: TranslationOption[] = cleanedWords.map((word) => {
+      const lowerWord = word.toLowerCase();
+      if (notFoundSet.has(lowerWord)) {
+        return {
+          english: word,
+          options: [NOT_FOUND_TEXT],
+        };
+      }
+
+      // Gemini の結果から検索
+      const matched = geminiResults.find(
+        (item) => item.english.toLowerCase() === lowerWord,
+      );
+
+      return {
+        english: word,
+        options: matched ? matched.options : [NOT_FOUND_TEXT],
+      };
+    });
+
+    // 6. 成功レスポンス（200 OK）
+    return NextResponse.json({ translations: finalTranslations });
   } catch (error) {
     console.error("POST /api/words/translate エラー:", error);
     return NextResponse.json(
