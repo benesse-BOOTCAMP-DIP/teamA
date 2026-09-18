@@ -31,7 +31,7 @@ export default function StoryDetailPages() {
   }, [id]);
 
   return (
-    <div>
+    <div className="container">
       <h1>物語詳細画面</h1>
 
       {story && (
