@@ -98,14 +98,21 @@
   font-size: 1rem;
   font-weight: 700;
   color: var(--color-text-main);
-  margin: 8px 0;
+  /* margin: 8px 0; */
 }
 
 .content {
   margin: 8px 0;
   padding-bottom: 8px;
   border-bottom: 1px solid var(--color-border);
+  display: flex;
 }
+
+.titleLink{
+  color: var(--color-primary);
+  font-weight: 800;
+}
+
 
 .storyText {
   font-size: 0.875rem;
@@ -117,6 +124,15 @@
   overflow: hidden;
 }
 
+/* タイトルのボタン */
+.storyContainer {
+ background-color: #ffffff;
+  border-radius: 1rem;
+  padding: 1rem;
+  box-shadow: 0 2px 2px 0 rgb(0 0 0 / 0.05);
+  border: 1px solid var(--color-primary-hover);
+  /* margin-bottom: 1.5rem; */
+}
 /* ========================================
    4. 単語テーブル
    ======================================== */
