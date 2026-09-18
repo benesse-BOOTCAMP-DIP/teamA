@@ -14,7 +14,6 @@ interface StoryEnglishViewProps {
   words?: StoryWordInfo[];
 }
 
-
 export default function StoryEnglishView({
   title,
   story,

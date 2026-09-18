@@ -25,6 +25,8 @@ type Story={
 };
 
 export default function Tabs() {
+  //検索キーワード
+  const [searchWord, setSearchWord] = useState("");
   // 現在表示しているタブ
   const [activeTab, setActiveTab] = useState<Tab>("story");
   //単語データ
@@ -69,10 +71,31 @@ export default function Tabs() {
     getData();
   }, []);
 
+  const filteredStories = stories.filter(
+    (story) =>
+      story.title.includes(searchWord) ||
+      story.content.includes(searchWord)
+  );
 
+  const filteredWords = words.filter(
+    (word) =>
+      word.english.includes(searchWord) ||
+      word.meanings.some((meaning) =>
+        meaning.meaning.includes(searchWord)
+      )
+  );
   
   return (
     <div className="container">
+      <div className={styles.boxCenter}>
+        <input
+          className={styles.searchInput}
+          type="text"
+          value={searchWord}
+          onChange={(e) => setSearchWord(e.target.value)}
+          placeholder="検索キーワードを入力してください"
+        />
+      </div>
       <div className={`${styles.tabs} ${styles.boxCenter}`}>
         <button  className={`${styles.tab} ${
       activeTab === "story" ? styles.active : ""
@@ -91,13 +114,10 @@ export default function Tabs() {
       <div>
         {activeTab === "story" && (
           <div className={styles.story}>
-            {stories.map((story) => (
-              <div key={story.id}>
-                {/* <h3 className={styles.title}>{story.title}</h3> */}
-                <Link href={`/list/${story.id}`}>
-                  <h3 className={styles.title}>{story.title}</h3>
-                </Link>
-                <p className={styles.content}>{story.content}</p>
+            {filteredStories.map((story) => (
+              <div key={story.id} className={styles.content}>
+                <h3 className={styles.title}>{story.title}</h3>
+                <p className={styles.storyText}>{story.content}</p>
               </div>
             ))}
           </div>
@@ -113,7 +133,7 @@ export default function Tabs() {
                 </tr>
               </thead>
               <tbody>
-                  {words.map((word)=>{
+                  {filteredWords.map((word)=>{
                       return(         
                           <tr key={word.word_id}>
                               <td className={styles.textCenter}>{word.english}</td>
