@@ -26,7 +26,6 @@ type Story={
 export default function Tabs() {
   //検索キーワード
   const [searchWord, setSearchWord] = useState("");
-  // const [keyword, setKeyword] = useState("");
   // 現在表示しているタブ
   const [activeTab, setActiveTab] = useState<Tab>("story");
   //単語データ
