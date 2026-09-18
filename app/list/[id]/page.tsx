@@ -2,9 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import type { StoryDetailResponse } from "@/app/api/mocks/stories/[id]/route";
+import type { StoryDetailResponse } from "@/app/api/stories/[id]/route";
 import styles from "./page.module.css";
 import StoryJapaneseViews from "@/components/storyJapaneseView";
+import DetailStoryEnglishView from "@/components/DetailStoryEnglishView";
+
 
 export default function StoryDetailPages() {
   const params = useParams();
@@ -15,7 +17,7 @@ export default function StoryDetailPages() {
   
   useEffect(() => {
     async function getData() {
-      const response = await fetch(`/api/mocks/stories/${id}`);
+      const response = await fetch(`/api/stories/${id}`);
 
       if (!response.ok) {
         alert("データの取得に失敗しました");
@@ -36,19 +38,13 @@ export default function StoryDetailPages() {
 
       {story && (
         <>
-          <h2>{story.title}</h2>
-          <p>{story.story}</p>
+          {/* <h2>{story.title}</h2>
+          <p>{story.story}</p> */}
+          <DetailStoryEnglishView title={story.title} story={story.story} words={story.words} />
           <button onClick={() => setIsJapaneseVisible(!isJapaneseVisible)} >
              {isJapaneseVisible ? "和訳を閉じる　▲" : "和訳を見る　▼"} 
           </button> {isJapaneseVisible && ( 
             <div>
-              {/* <p>{story.japaneseStory}</p>
-              <div  className={styles.keywords}>{story.words.map((word) => (
-                <p key={word.meaningId}>
-                  {word.english} / {word.japanese},
-                </p>
-              ))}
-              </div> */}
               <StoryJapaneseViews japaneseStory={story.japaneseStory} words={story.words}/>
             </div> 
           )}
