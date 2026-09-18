@@ -1,0 +1,31 @@
+.keywords{
+    display: flex;
+}
+
+/* ========================================
+   1. コンテナ・全体レイアウト
+   ======================================== */
+:global(.container) {
+  max-width: 393px;
+  min-height: 100vh;
+  margin: 0 auto;
+  padding: 32px 16px;
+  background-color: var(--color-bg-base);
+  color: var(--color-text-main);
+  box-sizing: border-box;
+}
+
+
+/* ========================================
+  ヘッダー
+   ======================================== */
+  .header{
+    display: flex;
+    justify-content: space-around;
+  }
+
+  .boxCenter {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
