@@ -518,46 +518,16 @@ export interface RegisterStoryResponse {
 
 ---
 
-## 6. 物語一覧・詳細取得 API
+## 6. 物語詳細取得 API
 
 ユーザーが作成した物語の一覧、および特定の物語の詳細（本文＋使用されている単語カード情報）を取得します。
 
 - **URL**:
-  - **一覧取得**: `GET /api/stories?userId=1`
   - **詳細取得**: `GET /api/stories/[id]` （例: `GET /api/stories/10`）
 - **実装ファイル**:
-  - 一覧: `app/api/stories/route.ts`
   - 詳細: `app/api/stories/[id]/route.ts`
 
-### 6.1 物語一覧取得 (`GET /api/stories?userId=1`)
-
-#### 📥 リクエスト
-
-| パラメータ | 型       | 必須 | 説明                 |
-| :--------- | :------- | :--- | :------------------- |
-| `userId`   | `number` | ○    | 取得対象のユーザーID |
-
-#### 📤 レスポンス `200 OK`
-
-物語タブなどでカード一覧を表示するための軽量なデータです。登録日の新しい順（降順）で返ります。
-
-```json
-{
-  "stories": [
-    {
-      "storyId": 10,
-      "title": "朝の公園ルーティン",
-      "story": "Every morning, I ran to the park...",
-      "japaneseStory": "毎朝、私は新鮮な空気を...",
-      "createdAt": "2026-09-16T10:00:00Z"
-    }
-  ]
-}
-```
-
----
-
-### 6.2 物語詳細取得 (`GET /api/stories/[id]`)
+### 6.1 物語詳細取得 (`GET /api/stories/[id]`)
 
 物語詳細画面を開いた際に、本文と同時に**「この物語で学べる単語リスト（意味や文中での活用形を含む）」**を一度に取得します。
 
