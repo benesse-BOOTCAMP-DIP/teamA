@@ -87,6 +87,9 @@ export default function Tabs() {
   
   return (
     <div className="container">
+      <Link href="/register">
+        <p>物語登録画面へ</p>
+      </Link>
       <div className={styles.boxCenter}>
         <input
           className={styles.searchInput}
