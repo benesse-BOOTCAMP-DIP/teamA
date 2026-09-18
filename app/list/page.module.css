@@ -88,9 +88,9 @@
   border: 1px solid var(--color-border);
   box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   background-color: var(--color-bg-surface);
-  padding: 12px 16px;
-  /* 単語タブのテーブル高さと統一 thead 50px + tbody 460px*/
-  max-height: 510px;
+  padding: 0 16px;
+  /* 単語タブのテーブル高さと統一 thead 50px + tbody 630px*/
+  max-height: 680px;
   overflow-y: auto;
 }
 
@@ -194,7 +194,7 @@
 
 .wordTable tbody {
   display: block;
-  max-height: 460px;
+  max-height: 630px;
   overflow-y: auto;
   width: 100%;
 }
