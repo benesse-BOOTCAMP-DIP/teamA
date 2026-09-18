@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import type { StoryDetailResponse } from "@/app/api/mocks/stories/[id]/route";
 import styles from "./page.module.css";
+import StoryJapaneseViews from "@/components/storyJapaneseView";
 
 export default function StoryDetailPages() {
   const params = useParams();
@@ -38,16 +39,17 @@ export default function StoryDetailPages() {
           <h2>{story.title}</h2>
           <p>{story.story}</p>
           <button onClick={() => setIsJapaneseVisible(!isJapaneseVisible)} >
-             {isJapaneseVisible ? "▲" : "▼和訳を見る"} 
+             {isJapaneseVisible ? "和訳を閉じる　▲" : "和訳を見る　▼"} 
           </button> {isJapaneseVisible && ( 
             <div>
-              <p>{story.japaneseStory}</p>
+              {/* <p>{story.japaneseStory}</p>
               <div  className={styles.keywords}>{story.words.map((word) => (
                 <p key={word.meaningId}>
                   {word.english} / {word.japanese},
                 </p>
               ))}
-              </div>
+              </div> */}
+              <StoryJapaneseViews japaneseStory={story.japaneseStory} words={story.words}/>
             </div> 
           )}
         </>
