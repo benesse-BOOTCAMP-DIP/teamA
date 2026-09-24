@@ -1,17 +1,19 @@
 import fs from "fs";
 import path from "path";
 
-// 1. .env.local から GEMINI_API_KEY を読み込む
+// 1. .env.local から GROQ_API_KEY / OPENAI_API_KEY を読み込む
 const envPath = path.resolve(process.cwd(), ".env.local");
 if (fs.existsSync(envPath)) {
   const envContent = fs.readFileSync(envPath, "utf-8");
   for (const line of envContent.split("\n")) {
     const trimmed = line.trim();
-    if (trimmed.startsWith("GEMINI_API_KEY=")) {
-      process.env.GEMINI_API_KEY = trimmed
-        .replace("GEMINI_API_KEY=", "")
-        .replace(/["']/g, "")
-        .trim();
+    for (const key of ["GROQ_API_KEY", "OPENAI_API_KEY"]) {
+      if (trimmed.startsWith(`${key}=`)) {
+        process.env[key] = trimmed
+          .replace(`${key}=`, "")
+          .replace(/["']/g, "")
+          .trim();
+      }
     }
   }
 }
@@ -27,7 +29,7 @@ async function runTest() {
 
   console.log("==================================================");
   console.log("🔍 送信する英単語:", wordsToTest);
-  console.log("🤖 Gemini API に問い合わせ中... 少々お待ちください");
+  console.log("🤖 Groq API に問い合わせ中... 少々お待ちください");
   console.log("==================================================");
 
   // 3. 擬似的な HTTP POST リクエストを作成

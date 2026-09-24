@@ -1,17 +1,8 @@
 import { NextResponse } from "next/server";
-import { GoogleGenAI, Type, type Schema } from "@google/genai";
+import { generateJson, isRateLimitError } from "@/lib/ai/groq";
+import { assertTextsAreSafe, ModerationFlaggedError } from "@/lib/ai/moderation";
 
 const NOT_FOUND_TEXT = "辞書に登録されていません";
-
-// 1. クライアントの初期化
-// GEMINI_API_KEY 環境変数を明示的に渡す（設定されていない場合はエラーハンドリング）
-function getGeminiClient(): GoogleGenAI {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) {
-    throw new Error("GEMINI_API_KEY が環境変数に設定されていません");
-  }
-  return new GoogleGenAI({ apiKey });
-}
 
 /**
  * Datamuse API (https://api.datamuse.com/words) を使用して単語が存在するか確認する関数
@@ -68,37 +59,42 @@ export interface TranslateResponse {
   translations: TranslationOption[];
 }
 
-// 2. Gemini用のレスポンススキーマ定義 (JSONの形を固定する)
-const translateSchema: Schema = {
-  type: Type.OBJECT,
+const TRANSLATE_SYSTEM_PROMPT = `
+あなたは日本の高校の英語授業で使われる英和辞典アシスタントです。
+性的・暴力的・差別的な意味やスラング・俗語的な意味は絶対に含めないでください。該当する単語であっても、教科書に載るような一般的・健全な意味のみを挙げてください。
+`.trim();
+
+// Groq の Structured Outputs (json_schema, strict) 用のスキーマ定義
+const translateSchema = {
+  type: "object",
   properties: {
     translations: {
-      type: Type.ARRAY,
+      type: "array",
       description: "各単語の翻訳結果のリスト",
       items: {
-        type: Type.OBJECT,
+        type: "object",
         properties: {
           english: {
-            type: Type.STRING,
+            type: "string",
             description: "入力された元の英単語",
           },
           options: {
-            type: Type.ARRAY,
-            items: {
-              type: Type.STRING,
-            },
-            description: `その英単語の代表的な日本語の意味（よく使われる順に2〜10個程度）。単語が不明な場合は"${NOT_FOUND_TEXT}"のみを返すこと。`,
+            type: "array",
+            items: { type: "string" },
+            description: `その英単語の、高校の教科書レベルで健全な日本語の意味（よく使われる順に2〜10個程度）。性的・暴力的・差別的・スラング的な意味は含めないこと。単語が不明な場合は"${NOT_FOUND_TEXT}"のみを返すこと。`,
           },
         },
         required: ["english", "options"],
+        additionalProperties: false,
       },
     },
   },
   required: ["translations"],
+  additionalProperties: false,
 };
 
 /**
- * Gemini API を呼び出して英単語の日本語訳候補を生成する処理
+ * Groq API を呼び出して英単語の日本語訳候補を生成する処理
  * 返り値: { translations: [ { english: "spring", options: ["春", "バネ", "跳ぶ"] } ] }
  */
 async function generateTranslations(
@@ -113,34 +109,31 @@ async function generateTranslations(
 品詞（動詞、名詞など）によって意味が大きく異なる場合は、代表的な品詞の意味をバランスよく含めてください。
 単語が不明または一般的でない場合は"${NOT_FOUND_TEXT}"のみを返してください。
 また、UIのプルダウンで選択しやすいように、簡潔な日本語表現（例: 「走る」「経営する」など）にしてください。
+性的・暴力的・差別的な意味やスラング・俗語的な意味は挙げないでください。
 
 【英単語リスト】
 ${wordListText}
   `.trim();
 
-  const ai = getGeminiClient();
-
-  const response = await ai.models.generateContent({
-    model: "gemini-3.1-flash-lite",
-    contents: prompt,
-    config: {
-      responseMimeType: "application/json",
-      responseSchema: translateSchema,
-      temperature: 0.3, // 辞書的な意味なので低めの温度でブレを防ぐ
-    },
+  const result = await generateJson<TranslateResponse>({
+    systemPrompt: TRANSLATE_SYSTEM_PROMPT,
+    userPrompt: prompt,
+    temperature: 0.3, // 辞書的な意味なので低めの温度でブレを防ぐ
+    schemaName: "translations",
+    schema: translateSchema,
   });
 
-  if (!response.text) {
-    throw new Error("Gemini APIからレスポンスを取得できませんでした。");
-  }
+  // Groqが生成したテキストをユーザーに返す前にモデレーションチェックする
+  const allOptions = result.translations.flatMap((t) => t.options);
+  await assertTextsAreSafe(allOptions);
 
-  return JSON.parse(response.text) as TranslateResponse;
+  return result;
 }
 
 /**
  * POST ハンドラー (API Endpoint: POST /api/words/translate)
  * フロントエンドから送信された英単語リストを受け取り、
- * Datamuse 辞書APIで単語の実在チェックを行った後、実在する単語のみ Gemini で意味候補を生成して返す
+ * Datamuse 辞書APIで単語の実在チェックを行った後、実在する単語のみ Groq で意味候補を生成して返す
  *
  * Request: JSON { "words": ["spring", "run", "apple"] }
  * Response: JSON { "translations": [ { "english": "spring", "options": ["春", "バネ", "温泉"] } ] }
@@ -182,11 +175,11 @@ export async function POST(request: Request) {
       checkResults.filter((r) => !r.exists).map((r) => r.word.toLowerCase()),
     );
 
-    // 4. 実在する単語があれば Gemini API で翻訳候補を生成
-    let geminiResults: TranslationOption[] = [];
+    // 4. 実在する単語があれば Groq API で翻訳候補を生成
+    let groqResults: TranslationOption[] = [];
     if (validWords.length > 0) {
-      const geminiResponse = await generateTranslations(validWords);
-      geminiResults = geminiResponse.translations || [];
+      const groqResponse = await generateTranslations(validWords);
+      groqResults = groqResponse.translations || [];
     }
 
     // 5. 元の単語順序を保持したままレスポンスを作成
@@ -199,8 +192,8 @@ export async function POST(request: Request) {
         };
       }
 
-      // Gemini の結果から検索
-      const matched = geminiResults.find(
+      // Groq の結果から検索
+      const matched = groqResults.find(
         (item) => item.english.toLowerCase() === lowerWord,
       );
 
@@ -215,13 +208,16 @@ export async function POST(request: Request) {
   } catch (error: any) {
     console.error("POST /api/words/translate エラー:", error);
 
-    // Gemini API の利用制限（429 Too Many Requests / RESOURCE_EXHAUSTED）を検知
-    if (
-      error?.status === 429 ||
-      error?.message?.includes("429") ||
-      error?.message?.includes("quota") ||
-      error?.message?.includes("RESOURCE_EXHAUSTED")
-    ) {
+    // モデレーションで不適切と判定された場合
+    if (error instanceof ModerationFlaggedError) {
+      return NextResponse.json(
+        { error: "生成された内容が不適切と判定されました。再度お試しください" },
+        { status: 422 },
+      );
+    }
+
+    // Groq API の利用制限（429 Too Many Requests）を検知
+    if (isRateLimitError(error)) {
       return NextResponse.json(
         {
           error:
