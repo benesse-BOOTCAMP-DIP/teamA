@@ -35,6 +35,7 @@ export interface StoryItem {
   id: number;
   title: string;
   content: string;
+  imageUrl?: string | null;
 }
 
 /**
@@ -325,7 +326,7 @@ export async function GET(request: Request) {
     // 2. stories テーブルからユーザーの物語一覧を取得
     const { data: storiesData, error: storiesError } = await supabase
       .from("stories")
-      .select("story_id, title, story")
+      .select("story_id, title, story, image_url")
       .eq("user_id", userId)
       .order("created_at", { ascending: false });
 
@@ -333,6 +334,7 @@ export async function GET(request: Request) {
       id: s.story_id,
       title: s.title || "無題の物語",
       content: s.story || "",
+      imageUrl: s.image_url ?? null,
     }));
 
     // フロントエンドの MocksResponse と完全に同じ形式で返却
