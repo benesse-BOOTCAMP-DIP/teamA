@@ -70,7 +70,6 @@ export default function Tabs() {
         setStories(data.stories);
       } catch (error) {
         alert("データの取得に失敗しました");
-        console.error(error);
       } finally {
         // ローディング終了
         setIsLoading(false);
