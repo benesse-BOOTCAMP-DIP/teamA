@@ -87,8 +87,7 @@ const translateSchema: Schema = {
             items: {
               type: Type.STRING,
             },
-            description:
-              `その英単語の代表的な日本語の意味（よく使われる順に2〜10個程度）。単語が不明な場合は"${NOT_FOUND_TEXT}"のみを返すこと。`,
+            description: `その英単語の代表的な日本語の意味（よく使われる順に2〜10個程度）。単語が不明な場合は"${NOT_FOUND_TEXT}"のみを返すこと。`,
           },
         },
         required: ["english", "options"],
@@ -213,8 +212,25 @@ export async function POST(request: Request) {
 
     // 6. 成功レスポンス（200 OK）
     return NextResponse.json({ translations: finalTranslations });
-  } catch (error) {
+  } catch (error: any) {
     console.error("POST /api/words/translate エラー:", error);
+
+    // Gemini API の利用制限（429 Too Many Requests / RESOURCE_EXHAUSTED）を検知
+    if (
+      error?.status === 429 ||
+      error?.message?.includes("429") ||
+      error?.message?.includes("quota") ||
+      error?.message?.includes("RESOURCE_EXHAUSTED")
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "AIの利用制限に達しました。しばらく時間を置いてから再度お試しください",
+        },
+        { status: 429 },
+      );
+    }
+
     return NextResponse.json(
       { error: "英単語の意味候補の取得に失敗しました" },
       { status: 500 },
