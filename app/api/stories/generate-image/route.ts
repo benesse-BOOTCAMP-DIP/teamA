@@ -56,7 +56,11 @@ export async function POST(request: Request) {
       );
     }
 
-    if (body.title && typeof body.title === "string" && body.title.trim().length > 100) {
+    if (
+      body.title &&
+      typeof body.title === "string" &&
+      body.title.trim().length > 100
+    ) {
       return NextResponse.json(
         { success: false, error: "タイトルは100文字以内で入力してください" },
         { status: 400 },
@@ -78,7 +82,11 @@ export async function POST(request: Request) {
       console.error("画像生成APIエラー:", imageRes.status, imageRes.statusText);
       if (imageRes.status === 429) {
         return NextResponse.json(
-          { success: false, error: "AIの利用制限に達しました。しばらく時間を置いてから再度お試しください" },
+          {
+            success: false,
+            error:
+              "AIの利用制限に達しました。しばらく時間を置いてから再度お試しください",
+          },
           { status: 429 },
         );
       }
