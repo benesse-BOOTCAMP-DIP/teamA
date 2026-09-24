@@ -445,6 +445,7 @@ export interface GenerateStoryResponse {
   "title": "朝の公園ルーティン",
   "story": "Every morning, I ran to the park to enjoy the fresh air.",
   "japaneseStory": "毎朝、私は新鮮な空気を楽しむために公園へ走りました。",
+  "imageUrl": "https://example.supabase.co/storage/v1/object/public/story-images/abc123.webp",
   "words": [
     { "meaningId": 1, "surfaces": ["ran"] },
     { "meaningId": 2, "surfaces": ["park"] }
@@ -458,6 +459,7 @@ export interface GenerateStoryResponse {
 | `title`             | `string`              | ○    | 物語のタイトル（日本語）              |
 | `story`             | `string`              | ○    | 英文本文                              |
 | `japaneseStory`     | `string`              | -    | 和訳本文                              |
+| `imageUrl`          | `string`              | -    | 生成された挿絵の画像URL（任意）       |
 | `words`             | `StoryMeaningInput[]` | ○    | 物語に含まれる単語と活用形の配列      |
 | `words[].meaningId` | `number`              | ○    | 紐付ける意味ID（`meaning_id`）        |
 | `words[].surfaces`  | `string[]`            | -    | 物語中での実際の表記（例: `["ran"]`） |
@@ -502,6 +504,7 @@ export interface RegisterStoryRequest {
   title: string;
   story: string;
   japaneseStory?: string;
+  imageUrl?: string;
   words: StoryMeaningInput[];
 }
 
@@ -539,6 +542,7 @@ export interface RegisterStoryResponse {
   "title": "朝の公園ルーティン",
   "story": "Every morning, I ran to the park to enjoy the fresh air.",
   "japaneseStory": "毎朝、私は新鮮な空気を楽しむために公園へ走りました。",
+  "imageUrl": "https://example.supabase.co/storage/v1/object/public/story-images/abc123.webp",
   "createdAt": "2026-09-16T10:00:00Z",
   "words": [
     {
@@ -557,18 +561,19 @@ export interface RegisterStoryResponse {
 }
 ```
 
-| フィールド          | 型                  | 説明                               |
-| :------------------ | :------------------ | :--------------------------------- |
-| `storyId`           | `number`            | 物語ID                             |
-| `title`             | `string`            | 物語タイトル（日本語）             |
-| `story`             | `string`            | 英文本文                           |
-| `japaneseStory`     | `string`            | 和訳本文                           |
-| `createdAt`         | `string`            | 作成日時                           |
-| `words`             | `StoryDetailWord[]` | 物語で使用されている単語リスト     |
-| `words[].meaningId` | `number`            | 意味ID                             |
-| `words[].english`   | `string`            | 英単語                             |
-| `words[].japanese`  | `string`            | 日本語訳                           |
-| `words[].surfaces`  | `string[]`          | 物語中での実際の表記（活用形など） |
+| フィールド          | 型                  | 説明                                               |
+| :------------------ | :------------------ | :------------------------------------------------- |
+| `storyId`           | `number`            | 物語ID                                             |
+| `title`             | `string`            | 物語タイトル（日本語）                             |
+| `story`             | `string`            | 英文本文                                           |
+| `japaneseStory`     | `string`            | 和訳本文                                           |
+| `imageUrl`          | `string`            | 物語の挿絵画像URL（未設定時は `null` または空文字）|
+| `createdAt`         | `string`            | 作成日時                                           |
+| `words`             | `StoryDetailWord[]` | 物語で使用されている単語リスト                     |
+| `words[].meaningId` | `number`            | 意味ID                                             |
+| `words[].english`   | `string`            | 英単語                                             |
+| `words[].japanese`  | `string`            | 日本語訳                                           |
+| `words[].surfaces`  | `string[]`          | 物語中での実際の表記（活用形など）                 |
 
 ### TypeScript 型定義
 
@@ -597,6 +602,7 @@ export interface StoryDetailResponse {
   title: string;
   story: string;
   japaneseStory: string;
+  imageUrl?: string | null;
   createdAt: string;
   words: StoryDetailWord[];
 }
@@ -637,5 +643,76 @@ export interface DeleteStoryResponse {
   error?: string;
 }
 ```
+
+---
+
+## 8. 物語画像生成 API
+
+生成された物語の英文（またはタイトル）を元に、Google Gemini (Imagen 3) を用いて高校生向け英語学習アプリ「スト単」の挿絵（イラスト）画像を生成し、Supabase Storage に保存して公開画像URLを返却します。
+
+- **URL**: `POST /api/stories/generate-image`
+- **Content-Type**: `application/json`
+- **実装ファイル**: `app/api/stories/generate-image/route.ts`
+
+### 📥 リクエスト（フロント → バック）
+
+```json
+{
+  "story": "Every morning, I ran to the park to enjoy the fresh air.",
+  "title": "朝の公園ルーティン"
+}
+```
+
+| フィールド | 型       | 必須 | 説明                                           |
+| :--------- | :------- | :--- | :--------------------------------------------- |
+| `story`    | `string` | ○    | 物語の英文本文（画像生成の元となる英文）       |
+| `title`    | `string` | -    | 物語のタイトル（日本語、任意）                 |
+
+### 📤 レスポンス（バック → フロント）
+
+#### 成功時 `200 OK`
+
+```json
+{
+  "success": true,
+  "image": {
+    "url": "https://example.supabase.co/storage/v1/object/public/story-images/abc123.webp",
+    "alt": "朝の公園で走る学生"
+  }
+}
+```
+
+| フィールド  | 型               | 説明                                           |
+| :---------- | :--------------- | :--------------------------------------------- |
+| `success`   | `boolean`        | 成功フラグ（`true`）                           |
+| `image`     | `StoryImageInfo` | 生成された画像情報                             |
+| `image.url` | `string`         | Supabase Storage の公開画像URL                 |
+| `image.alt` | `string`         | 画像の代替テキスト（アクセシビリティ・説明用） |
+
+#### エラー時 `400 Bad Request` / `500 Internal Server Error`
+
+- `400`: `物語の本文（story）を入力してください`
+- `500`: `画像の生成に失敗しました`
+
+### TypeScript 型定義 (`@/app/api/stories/generate-image/route`)
+
+```typescript
+export interface GenerateImageRequest {
+  story: string;
+  title?: string;
+}
+
+export interface StoryImageInfo {
+  url: string;
+  alt: string;
+}
+
+export interface GenerateImageResponse {
+  success: boolean;
+  image?: StoryImageInfo;
+  error?: string;
+}
+```
+
 
 ---
