@@ -323,7 +323,7 @@ export default function WordRegisterPage() {
           type="button"
           disabled={isLoading}
           onClick={handleAddRow}
-              className={`w-full py-2.5 mb-5 border-2 border-dashed rounded-xl font-bold flex items-center justify-center gap-1.5 text-sm transition-colors ${isAllOptionsGenerated || isLoading
+              className={`w-full py-2.5 mb-5 border-2 border-dashed rounded-xl font-bold flex items-center justify-center gap-1.5 text-sm transition-colors ${  isLoading
               ? 'border-stone-200 text-stone-300 bg-stone-50 cursor-not-allowed'
                 : 'border-stone-300 text-stone-600 hover:bg-stone-50 hover:border-stone-400 cursor-pointer'
             }`}
