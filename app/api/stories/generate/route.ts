@@ -193,7 +193,25 @@ export async function POST(request: Request) {
 
     // 4. 成功レスポンス（200 OK）
     return NextResponse.json(result);
-  } catch (error) {
+  } catch (error: any) {
+    console.error("物語生成エラー:", error);
+
+    // Gemini API の利用制限（429 Too Many Requests / RESOURCE_EXHAUSTED）を検知
+    if (
+      error?.status === 429 ||
+      error?.message?.includes("429") ||
+      error?.message?.includes("quota") ||
+      error?.message?.includes("RESOURCE_EXHAUSTED")
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "AIの利用制限に達しました。しばらく時間を置いてから再度お試しください",
+        },
+        { status: 429 },
+      );
+    }
+
     return NextResponse.json(
       { error: "物語の生成に失敗しました" },
       { status: 500 },
