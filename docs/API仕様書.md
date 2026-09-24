@@ -163,7 +163,8 @@ export interface SavedWord {
     {
       "id": 1,
       "title": "魚とラーメン",
-      "content": "Ken has a fish. He likes ramen very much."
+      "content": "Ken has a fish. He likes ramen very much.",
+      "imageUrl": "https://example.supabase.co/storage/v1/object/public/story-images/abc123.webp"
     }
   ],
   "words": [
@@ -198,6 +199,7 @@ export interface SavedWord {
 | `stories[].id`       | `number`         | 物語ID (`story_id`)                                    |
 | `stories[].title`    | `string`         | 物語タイトル（未設定時は `"無題の物語"`）              |
 | `stories[].content`  | `string`         | 物語本文 (`story`)                                     |
+| `stories[].imageUrl` | `string \| null` | 物語の挿絵画像URL（未設定時は `null`）                 |
 | `words`              | `WordListItem[]` | そのユーザーが登録した単語の配列（登録日時の新しい順） |
 | `words[].id`         | `number`         | 識別用ID（`meaning_id` と同値）                        |
 | `words[].meaning_id` | `number`         | 意味ID（`meanings` テーブルの主キー）                  |
@@ -220,6 +222,7 @@ export interface StoryItem {
   id: number;
   title: string;
   content: string;
+  imageUrl?: string | null;
 }
 
 export interface WordListItem {

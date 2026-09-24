@@ -17,6 +17,7 @@ export interface RegisterStoryRequest {
   title: string;
   story: string;
   japaneseStory?: string;
+  imageUrl?: string;
   words: StoryMeaningInput[];
 }
 
@@ -82,6 +83,7 @@ export async function POST(request: Request) {
         title: body.title.trim(),
         story: body.story.trim(),
         japanese_story: body.japaneseStory?.trim() || null,
+        image_url: body.imageUrl?.trim() || null,
       })
       .select("story_id, title, created_at")
       .single();
