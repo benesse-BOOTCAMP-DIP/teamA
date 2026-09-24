@@ -327,28 +327,25 @@ export default function StoryGeneratorPage() {
 
             {/* アクションボタン（再生成 ＆ 一覧へ戻る） */}
             <div className="flex flex-col gap-2.5">
+              <button
+                type="button"
+                onClick={() => void generateImage(storyData)}
+                disabled={isLoading || isImageLoading}
+                className="w-full py-2.5 bg-white border border-stone-300 text-stone-700 hover:bg-stone-50 font-bold rounded-xl text-sm transition shadow-sm flex items-center justify-center gap-1.5 disabled:opacity-50"
+              >
+                <span>🖼️</span>
+                <span>{isImageLoading ? '画像生成中...' : '画像を再生成する'}</span>
+              </button>
+
               {/* 物語再生成ボタン */}
               <button
                 type="button"
                 onClick={generateStory}
-                disabled={isLoading || isImageLoading}
-                className="w-full py-2.5 bg-white border border-stone-300 text-stone-700 hover:bg-stone-50 font-bold rounded-xl text-sm transition shadow-sm flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+                disabled={isImageLoading || isLoading}
+                className="w-full py-2.5 bg-white border border-stone-300 text-stone-700 hover:bg-stone-50 font-bold rounded-xl text-sm transition shadow-sm flex items-center justify-center gap-1.5"
               >
                 <span>🔄</span>
                 <span>別の物語を再生成する</span>
-              </button>
-
-              {/* 画像再生成ボタン */}
-              <button
-                type="button"
-                onClick={() => void generateImage(storyData)}
-                disabled={isImageLoading || isLoading}
-                className="w-full py-2.5 bg-white border border-stone-300 text-stone-700 hover:bg-stone-50 font-bold rounded-xl text-sm transition shadow-sm flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
-              >
-                <span>🖼️</span>
-                <span>
-                  {isImageLoading ? "画像生成中..." : "画像を再生成する"}
-                </span>
               </button>
 
               {/* 誤操作防止のために間隔を広げた一覧へ戻るボタン */}
