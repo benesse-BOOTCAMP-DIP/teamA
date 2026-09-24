@@ -147,7 +147,11 @@ export default function WordRegisterPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || '翻訳候補の取得に失敗しました');
+        throw new Error(
+          response.status === 429
+            ? 'AIの利用制限に達しました。しばらく時間を置いてから再度お試しください'
+            : data.error || '翻訳候補の取得に失敗しました',
+        );
       }
 
       // レスポンス受け取り { translations: [{ english: "...", options: [...] }] }
@@ -301,7 +305,7 @@ export default function WordRegisterPage() {
         </h1>
 
         {/* 単語入力行：words の数だけ WordInputRow を画面に並べます。 */}
-        <div className="mb-4">
+        <div className="mb-4 max-h-[360px] overflow-y-auto pr-1">
           {words.map((item, index) => (
             <WordInputRow
               // React が各行を区別できるよう、行ごとに一意な key を渡します。
@@ -323,7 +327,7 @@ export default function WordRegisterPage() {
           type="button"
           disabled={isLoading}
           onClick={handleAddRow}
-              className={`w-full py-2.5 mb-5 border-2 border-dashed rounded-xl font-bold flex items-center justify-center gap-1.5 text-sm transition-colors ${isAllOptionsGenerated || isLoading
+              className={`w-full py-2.5 mb-5 border-2 border-dashed rounded-xl font-bold flex items-center justify-center gap-1.5 text-sm transition-colors ${  isLoading
               ? 'border-stone-200 text-stone-300 bg-stone-50 cursor-not-allowed'
                 : 'border-stone-300 text-stone-600 hover:bg-stone-50 hover:border-stone-400 cursor-pointer'
             }`}

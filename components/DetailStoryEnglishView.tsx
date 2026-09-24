@@ -5,12 +5,14 @@ import type { StoryDetailWord } from "@/app/api/stories/[id]/route";
 
 interface DetailStoryEnglishViewProps {
   title: string;
+  imageUrl?:string | null ;
   story: string;
   words?: StoryDetailWord[];
 }
 
 export default function DetailStoryEnglishView({
   title,
+  imageUrl,
   story,
   words = [],
 }: DetailStoryEnglishViewProps) {
@@ -74,6 +76,13 @@ export default function DetailStoryEnglishView({
       </h1>
 
       <div className="bg-white rounded-2xl p-6 shadow-sm border border-stone-200 mb-3">
+        {imageUrl && (
+            <img
+              src={imageUrl}
+              alt="物語のイメージ画像"
+              style={{ borderRadius: "8px" }}
+            />
+          )}
           {/* ハイライト付き英文本文 */}
         <div className="bg-stone-50 rounded-xl p-5 border border-stone-100">
           <p className="text-base sm:text-lg leading-relaxed text-stone-700 font-serif whitespace-pre-wrap">

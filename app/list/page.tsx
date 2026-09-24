@@ -22,6 +22,7 @@ type Story={
   id:number;
   title:string;
   content:string;
+  imageUrl?: string | null;
 };
 
 export default function Tabs() {
@@ -33,41 +34,49 @@ export default function Tabs() {
   const [words,setWords]=useState<GroupedWord[]>([]);
   //物語データ
   const [stories,setStories]=useState<Story[]>([]);
+  //ローディング
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     async function getData() {
-      const response = await fetch("/api/words?userId=1");
+      try{
+        const response = await fetch("/api/words?userId=1");
 
-      if (!response.ok) {
-        alert("モックデータの取得に失敗しました");
-      }
-
-      const data: WordsListResponse = await response.json();
-
-      //同じ英単語の意味を配列に保持
-      const groupedWords = data.words.reduce<GroupedWord[]>((result, word) => {
-        const existingWord = result.find(
-          (item) => item.word_id === word.word_id
-        );
-
-        if (existingWord) {
-          existingWord.meanings.push({ meaning_id: word.meaning_id, meaning: word.japanese, });
-        } else {
-          result.push({
-             word_id: word.word_id,
-             english: word.english, 
-             meanings: [ { meaning_id: word.meaning_id, meaning: word.japanese, }, ], });
+        if (!response.ok) {
+          throw new Error("データの取得に失敗しました");
         }
 
-        return result;
-      }, []);
+        const data: WordsListResponse = await response.json();
 
-      setWords(groupedWords);
 
-      //物語データの取得
-      setStories(data.stories);
+        //同じ英単語の意味を配列に保持
+        const groupedWords = data.words.reduce<GroupedWord[]>((result, word) => {
+          const existingWord = result.find(
+            (item) => item.word_id === word.word_id
+          );
+
+          if (existingWord) {
+            existingWord.meanings.push({ meaning_id: word.meaning_id, meaning: word.japanese, });
+          } else {
+            result.push({
+              word_id: word.word_id,
+              english: word.english, 
+              meanings: [ { meaning_id: word.meaning_id, meaning: word.japanese, }, ], });
+          }
+
+          return result;
+        }, []);
+
+        setWords(groupedWords);
+        //物語データの取得
+        setStories(data.stories);
+      } catch (error) {
+        alert("予期しないエラーが発生しました");
+      } finally {
+        // ローディング終了
+        setIsLoading(false);
+      }
     }
-
     getData();
   }, []);
 
@@ -117,15 +126,34 @@ export default function Tabs() {
       <div>
         {activeTab === "story" && (
           <div className={styles.story}>
-            {filteredStories.map((story) => (
-              <div key={story.id}className={`${styles.content} ${styles.storyContainer}`} >
-                 <Link href={`/list/${story.id}`}>
-                     <h3 className={styles.title}>{story.title}</h3>                         
-                     <p className={styles.storyText}>{story.content}</p>
-                 </Link>
-                 <h3 className={styles.titleLink}>＞</h3>
+             {isLoading ? (
+              <div className={styles.loding}>
+                <p>読み込み中...</p>
               </div>
-            ))}
+            ) : (
+            filteredStories.map((story) => (
+              <div key={story.id}className={`${styles.contentDisplay} ${styles.storyContainer}`} >
+                <Link href={`/list/${story.id}`}>
+                  <div>
+                    <div className={styles.storyTitle}>
+                      <h3 className={styles.title}>{story.title}</h3>  
+                      <h3 className={styles.titleLink}>＞</h3>
+                    </div>
+                    <div className={styles.storyDetail}>
+                      {story.imageUrl && (
+                      <img
+                        className={styles.storyImage}
+                        src={story.imageUrl}
+                        alt="物語のイメージ画像"
+                      />
+                    )} 
+                    <p className={styles.storyText}>{story.content}</p>
+                    </div>
+                  </div>
+                 </Link>
+              </div>
+            ))
+          )}
           </div>
         )}
 

@@ -13,16 +13,41 @@
   background-color: var(--color-bg-base);
   color: var(--color-text-main);
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
 }
 
-
-/* ========================================
-  ヘッダー
-   ======================================== */
-  .header{
+/* ローディング */
+.loadingContainer{
     display: flex;
-    justify-content: space-around;
-  }
+    flex-direction: column;
+    justify-content: center;
+    flex: 1;
+}
+
+.loading{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.loading p{
+    height: 50px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.card {
+  background-color: #ffffff;
+  border-radius: 1rem;
+  padding: 0.75rem;
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  border: 1px solid #e7e5e4;
+  margin-bottom: 0.75rem;
+  width: 100%;
+}
+
 
   .boxCenter {
   display: flex;
