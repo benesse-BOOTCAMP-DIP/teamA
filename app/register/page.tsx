@@ -305,7 +305,7 @@ export default function WordRegisterPage() {
         </h1>
 
         {/* 単語入力行：words の数だけ WordInputRow を画面に並べます。 */}
-        <div className="mb-4">
+        <div className="mb-4 max-h-[360px] overflow-y-auto pr-1">
           {words.map((item, index) => (
             <WordInputRow
               // React が各行を区別できるよう、行ごとに一意な key を渡します。
