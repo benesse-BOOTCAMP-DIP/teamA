@@ -94,11 +94,20 @@
   overflow-y: auto;
 }
 
+/* ローディング */
+.loding{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  /* 単語タブのテーブル高さと統一 thead 50px + tbody 630px*/
+  height: 680px;
+  font-size: large;
+}
+
 .title{
   font-size: 1rem;
   font-weight: 700;
   color: var(--color-text-main);
-  /* margin: 8px 0; */
 }
 
 .content {
@@ -106,6 +115,7 @@
   padding-bottom: 8px;
   border-bottom: 1px solid var(--color-border);
   display: flex;
+  overflow-y: auto;
 }
 
 .titleLink{
