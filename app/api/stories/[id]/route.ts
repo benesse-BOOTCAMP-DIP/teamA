@@ -19,6 +19,7 @@ export interface StoryDetailResponse {
   title: string;
   story: string;
   japaneseStory: string;
+  imageUrl?: string | null;
   createdAt: string;
   words: StoryDetailWord[]; //物語に含まれる単語と活用形のリスト
 }
@@ -58,7 +59,7 @@ export async function GET(
     // 3. stories テーブルから物語本体を取得
     const { data: storyData, error: storyError } = await supabase
       .from("stories")
-      .select("story_id, title, story, japanese_story, created_at")
+      .select("story_id, title, story, japanese_story, image_url, created_at")
       .eq("story_id", storyId)
       .maybeSingle();
 
@@ -128,6 +129,7 @@ export async function GET(
       title: storyData.title ?? "",
       story: storyData.story ?? "",
       japaneseStory: storyData.japanese_story ?? "",
+      imageUrl: storyData.image_url ?? null,
       createdAt: storyData.created_at,
       words,
     };
@@ -229,4 +231,3 @@ export async function DELETE(
     );
   }
 }
-
