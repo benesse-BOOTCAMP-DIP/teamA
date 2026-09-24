@@ -173,47 +173,47 @@ export default function StoryGeneratorPage() {
   }, [generateStory]);
 
   return (
-    <main className="min-h-screen bg-stone-50 py-8 px-4 flex justify-center items-start text-stone-800">
-      <div className="w-full max-w-[393px]">
-        {/* ナビゲーションバー：一覧画面（/list）へのリンク */}
-        <div className="mb-4 flex items-center justify-between">
+    <main className="min-h-screen py-10 px-4 flex justify-center items-start text-[#f5e6ab]">
+      <div className="w-full max-w-[560px]">
+        {/* ナビゲーションバー */}
+        <div className="mb-6 flex items-center justify-between">
           <button
             type="button"
             onClick={() => router.push('/register')}
-            className="text-xs font-medium text-stone-500 hover:text-stone-800 transition"
+            className="text-xs font-semibold text-[#e79f4d] hover:text-[#f5e6ab] transition flex items-center gap-1 bg-[#3c3876]/40 px-3 py-1.5 rounded-xl border border-[#3c3876]"
           >
-            ← 単語登録へ
+            ← 単語登録へ戻る
           </button>
 
-          {/* 一覧画面へ飛ぶボタン（/list） */}
           <button
             type="button"
             onClick={saveStoryAndNavigate}
             disabled={isSaving || isLoading || !storyData}
-            className="text-xs font-bold text-sky-600 hover:text-sky-700 bg-white border border-stone-200 px-3 py-1.5 rounded-lg shadow-sm transition"
+            className="text-xs font-bold text-[#f5e6ab] bg-gradient-to-r from-[#dd7c5d] to-[#ba666b] px-3.5 py-1.5 rounded-xl shadow-md border border-[#e79f4d]/30 hover:brightness-110 transition disabled:opacity-50"
           >
-            {isSaving ? '登録中...' : '一覧画面へ ➔'}
+            {isSaving ? '保存中...' : '一覧へ保存 ➔'}
           </button>
         </div>
 
         {/* 生成中ローディング */}
         {isLoading && (
-          <div className="bg-white rounded-2xl p-8 text-center border border-stone-200 shadow-sm">
-            <div className="animate-spin h-8 w-8 border-3 border-sky-600 border-t-transparent rounded-full mx-auto mb-3"></div>
-            <p className="text-sm font-bold text-stone-700">物語を生成中...</p>
-            <p className="text-xs text-stone-400 mt-1">さっき登録した単語を使ってAIが執筆しています</p>
+          <div className="sunset-glass-card rounded-3xl p-10 text-center border border-[#e79f4d]/30 shadow-2xl relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-tr from-[#5f448a]/20 to-[#dd7c5d]/20 animate-pulse pointer-events-none"></div>
+            <div className="animate-spin h-10 w-10 border-3 border-[#dd7c5d] border-t-transparent rounded-full mx-auto mb-4"></div>
+            <p className="text-base font-bold sunset-gradient-text">夕焼けの物語を生成中...</p>
+            <p className="text-xs text-[#f5e6ab]/60 mt-1.5">登録した英単語を使ってAIがストーリーを描いています</p>
           </div>
         )}
 
         {/* エラー表示と再試行ボタン */}
         {!isLoading && errorMessage && (
-          <div className="bg-rose-50 border border-rose-200 text-rose-700 p-4 rounded-2xl mb-4 text-xs">
-            <p className="font-bold mb-1">生成エラー</p>
-            <p className="mb-3">{errorMessage}</p>
+          <div className="bg-[#823228]/50 border border-[#ba666b] text-[#f5e6ab] p-6 rounded-3xl mb-6 text-xs shadow-xl">
+            <p className="font-bold text-sm text-[#e79f4d] mb-1">⚠️ 生成エラー</p>
+            <p className="mb-4 leading-relaxed">{errorMessage}</p>
             <button
               type="button"
               onClick={generateStory}
-              className="bg-rose-600 text-white px-3 py-1.5 rounded-lg font-bold hover:bg-rose-700 transition"
+              className="bg-gradient-to-r from-[#dd7c5d] to-[#ba666b] text-white px-4 py-2 rounded-xl font-bold hover:brightness-110 transition shadow-md"
             >
               もう一度試す
             </button>
@@ -223,52 +223,59 @@ export default function StoryGeneratorPage() {
         {/* 物語のメイン表示 */}
         {!isLoading && storyData && (
           <>
-            {/* あなたが担当するハイライト対応の英文共通部品 */}
             <StoryEnglishView
               title={storyData.title}
               story={storyData.story}
               words={storyData.words}
             />
 
-            <section className="mb-4 bg-white rounded-2xl border border-stone-200 shadow-sm">
+            {/* 和訳アコーディオン */}
+            <section className="mb-6 sunset-glass-card rounded-2xl border border-[#3c3876] shadow-md overflow-hidden">
               <button
                 type="button"
                 onClick={() => setIsJapaneseVisible((visible) => !visible)}
                 aria-expanded={isJapaneseVisible}
-                className="w-full flex items-center justify-between gap-3 p-4 text-left text-sm font-bold text-stone-700"
+                className="w-full flex items-center justify-between gap-3 p-4 text-left text-sm font-bold text-[#f5e6ab] hover:bg-[#5f448a]/30 transition"
               >
-                <span>和訳を見る</span>
-                <span aria-hidden="true" className="text-sky-600 text-lg leading-none">
+                <span className="flex items-center gap-2">
+                  <span>🇯🇵</span>
+                  <span>日本語の和訳を見る</span>
+                </span>
+                <span aria-hidden="true" className="text-[#e79f4d] text-lg leading-none font-bold">
                   {isJapaneseVisible ? '−' : '+'}
                 </span>
               </button>
               {isJapaneseVisible && (
-                <p className="border-t border-stone-100 p-4 text-sm leading-relaxed text-stone-600 whitespace-pre-wrap">
+                <div className="border-t border-[#3c3876]/80 p-5 bg-[#0f0f28]/60 text-sm leading-relaxed text-[#f5e6ab]/90 whitespace-pre-wrap font-sans">
                   {storyData.japaneseStory}
-                </p>
+                </div>
               )}
             </section>
 
-            {/* アクションボタン群（再生成 ＆ 一覧へ遷移） */}
-            <div className="flex flex-col gap-2.5">
-              {/* 再生成ボタン */}
+            {/* アクションボタン群 */}
+            <div className="flex flex-col sm:flex-row gap-3">
               <button
                 type="button"
                 onClick={generateStory}
-                className="w-full py-2.5 bg-white border border-stone-300 text-stone-700 hover:bg-stone-50 font-bold rounded-xl text-sm transition shadow-sm flex items-center justify-center gap-1.5"
+                className="flex-1 py-3 bg-[#3c3876]/60 border border-[#e79f4d]/40 text-[#f5e6ab] hover:bg-[#5f448a]/60 font-bold rounded-2xl text-sm transition shadow-md flex items-center justify-center gap-2 cursor-pointer"
               >
-                <span>🔄</span>
-                <span>別の物語を再生成する</span>
+
+                <span>別の物語を再生成</span>
               </button>
 
-              {/* 一覧画面へ遷移するボタン */}
               <button
                 type="button"
                 onClick={saveStoryAndNavigate}
                 disabled={isSaving}
-                className="w-full py-3 bg-stone-800 text-white hover:bg-stone-900 font-bold rounded-xl text-sm transition shadow-sm"
+                className="flex-1 py-3 bg-gradient-to-r from-[#dd7c5d] via-[#ba666b] to-[#5f448a] text-white hover:brightness-110 font-bold rounded-2xl text-sm transition shadow-lg flex items-center justify-center gap-2 cursor-pointer"
               >
-                {isSaving ? '保存中...' : '物語を保存する'}
+                {isSaving ? (
+                  <span>保存処理中...</span>
+                ) : (
+                  <>
+                    <span> 物語を保存して一覧へ</span>
+                  </>
+                )}
               </button>
             </div>
           </>

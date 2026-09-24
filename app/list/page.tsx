@@ -86,76 +86,110 @@ export default function Tabs() {
   );
   
   return (
-    <div className="container">
-      <Link href="/register">
-        <p>物語登録画面へ</p>
-      </Link>
-      <div className={styles.boxCenter}>
+    <div className="container py-8 px-4">
+      {/* Top Header / Action Bar */}
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-extrabold tracking-wide sunset-gradient-text flex items-center gap-2">
+          <span>ライブラリ一覧</span>
+        </h1>
+        <Link
+          href="/register"
+          className="text-xs font-bold text-[#f5e6ab] bg-gradient-to-r from-[#dd7c5d] to-[#ba666b] px-3.5 py-2 rounded-xl shadow-md border border-[#e79f4d]/30 hover:brightness-110 transition flex items-center gap-1.5"
+        >
+          <span>単語を登録する</span>
+        </Link>
+      </div>
+
+      {/* Search Input */}
+      <div className="mb-6">
         <input
           className={styles.searchInput}
           type="text"
           value={searchWord}
           onChange={(e) => setSearchWord(e.target.value)}
-          placeholder="検索キーワードを入力してください"
+          placeholder="🔍 キーワードで物語・単語を検索..."
         />
       </div>
-      <div className={`${styles.tabs} ${styles.boxCenter}`}>
-        <button  className={`${styles.tab} ${
-      activeTab === "story" ? styles.active : ""
-    }`} onClick={() => setActiveTab("story")}>
-          物語
+
+      {/* Tabs */}
+      <div className={styles.tabs}>
+        <button
+          className={`${styles.tab} ${activeTab === "story" ? styles.active : ""}`}
+          onClick={() => setActiveTab("story")}
+        >
+       物語一覧 ({filteredStories.length})
         </button>
 
-        <button className={`${styles.tab} ${
-      activeTab === "word" ? styles.active : ""
-    }`} onClick={() => setActiveTab("word")}>
-          単語
+        <button
+          className={`${styles.tab} ${activeTab === "word" ? styles.active : ""}`}
+          onClick={() => setActiveTab("word")}
+        >
+        単語一覧 ({filteredWords.length})
         </button>
       </div>
 
-  
+      {/* Tab Contents */}
       <div>
         {activeTab === "story" && (
           <div className={styles.story}>
-            {filteredStories.map((story) => (
-              <div key={story.id}className={`${styles.content} ${styles.storyContainer}`} >
-                 <Link href={`/list/${story.id}`}>
-                     <h3 className={styles.title}>{story.title}</h3>                         
-                     <p className={styles.storyText}>{story.content}</p>
-                 </Link>
-                 <h3 className={styles.titleLink}>＞</h3>
+            {filteredStories.length === 0 ? (
+              <div className="sunset-glass-card rounded-2xl p-8 text-center text-[#f5e6ab]/60 text-sm">
+                該当する物語が見つかりませんでした。
               </div>
-            ))}
+            ) : (
+              filteredStories.map((story) => (
+                <Link key={story.id} href={`/list/${story.id}`} className="block group">
+                  <div className={styles.storyContainer}>
+                    <div className="flex-1 min-w-0">
+                      <h3 className={styles.title}>{story.title}</h3>
+                      <p className={styles.storyText}>{story.content}</p>
+                    </div>
+                    <span className={`${styles.titleLink} group-hover:translate-x-1 transition-transform`}>
+                      ➔
+                    </span>
+                  </div>
+                </Link>
+              ))
+            )}
           </div>
         )}
 
         {activeTab === "word" && (
-          <div className={styles.boxCenter}>
-            <table className={styles.wordTable}>
-              <thead>
-                <tr>
-                  <th className={`${styles.tableRow} ${styles.textCenter}`}>英語</th>
-                  <th className={`${styles.tableRow} ${styles.textCenter}`}>日本語</th>
-                </tr>
-              </thead>
-              <tbody>
-                  {filteredWords.map((word)=>{
-                      return(         
-                          <tr key={word.word_id}>
-                              <td className={styles.textCenter}>{word.english}</td>
-                              <td  className={styles.textCenter}>
-                                {word.meanings.map((meaning) => {
-                                  return <p key={meaning.meaning_id}>{meaning.meaning}</p>;
-                                })}
-                              </td>
-                          </tr>
-                      );
+          <div>
+            {filteredWords.length === 0 ? (
+              <div className="sunset-glass-card rounded-2xl p-8 text-center text-[#f5e6ab]/60 text-sm">
+                該当する単語が見つかりませんでした。
+              </div>
+            ) : (
+              <table className={styles.wordTable}>
+                <thead>
+                  <tr>
+                    <th className={styles.tableRow}>英単語</th>
+                    <th className={styles.tableRow}>日本語訳</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredWords.map((word) => {
+                    return (
+                      <tr key={word.word_id}>
+                        <td className="font-bold text-[#f5e6ab] px-4 py-3">{word.english}</td>
+                        <td className="px-4 py-3 text-[#f5e6ab]/80">
+                          {word.meanings.map((meaning) => (
+                            <span key={meaning.meaning_id} className="inline-block bg-[#5f448a]/40 border border-[#e79f4d]/30 rounded-lg px-2.5 py-0.5 text-xs mr-1.5 my-0.5 text-[#f5e6ab]">
+                              {meaning.meaning}
+                            </span>
+                          ))}
+                        </td>
+                      </tr>
+                    );
                   })}
-              </tbody>
-            </table>
+                </tbody>
+              </table>
+            )}
           </div>
         )}
       </div>
     </div>
   );
 }
+

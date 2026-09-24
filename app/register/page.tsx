@@ -288,29 +288,29 @@ export default function WordRegisterPage() {
     words.length > 0 && words.every((w) => w.japanese.trim() !== '');
 
   return (
-    // main はページ全体。背景色は設定仕様の stone-50 (#fafaf9) を適用しています。
-    <main className="min-h-screen bg-stone-50 py-8 px-4 text-stone-800 flex justify-center items-start">
-      {/* 
-        対象画面サイズ: 393 × 852 px (iPhone標準) に最適化。
-        w-full max-w-[393px] でモバイル幅に固定し、デスクトップでもスマホ画面サイズで綺麗に中央表示されます。
-        背景は bg-white、ボーダーは stone-200 (#e7e5e4) です。
-      */}
-      <div className="w-full max-w-[393px] bg-white p-5 rounded-2xl border border-stone-200 shadow-sm">
-        <h1 className="text-lg font-bold text-center mb-6 text-stone-800">
-          単語を登録する
-        </h1>
+    <main className="min-h-screen py-10 px-4 text-[#f5e6ab] flex justify-center items-start">
+      <div className="w-full max-w-[480px] sunset-glass-card p-6 sm:p-8 rounded-3xl border border-[#e79f4d]/30 shadow-2xl relative overflow-hidden">
+        {/* Decorative sunset glow background circle */}
+        <div className="absolute -top-20 -right-20 w-40 h-40 bg-[#dd7c5d]/20 rounded-full blur-3xl pointer-events-none"></div>
 
-        {/* 単語入力行：words の数だけ WordInputRow を画面に並べます。 */}
-        <div className="mb-4">
+        <div className="text-center mb-8">
+
+          <h1 className="text-2xl font-extrabold tracking-wide sunset-gradient-text">
+            単語を登録する
+          </h1>
+          <p className="text-xs text-[#f5e6ab]/70 mt-1">
+            覚えたい英単語を入力し、翻訳を取得して物語を生成しましょう
+          </p>
+        </div>
+
+        {/* 単語入力行 */}
+        <div className="mb-6 space-y-2">
           {words.map((item, index) => (
             <WordInputRow
-              // React が各行を区別できるよう、行ごとに一意な key を渡します。
               key={item.id}
               item={item}
               index={index}
-              // 2行以上あるときだけ削除ボタンを表示します。
               canDelete={words.length > 1}
-              // 子コンポーネントで起きた変更を、親の関数で処理します。
               onEnglishChange={handleEnglishChange}
               onJapaneseChange={handleJapaneseChange}
               onRemoveRow={handleRemoveRow}
@@ -318,63 +318,77 @@ export default function WordRegisterPage() {
           ))}
         </div>
 
-        {/* 行追加ボタン：通信中以外はいつでも行を追加できます。 */}
+        {/* 行追加ボタン */}
         <button
           type="button"
           disabled={isLoading}
           onClick={handleAddRow}
-              className={`w-full py-2.5 mb-5 border-2 border-dashed rounded-xl font-bold flex items-center justify-center gap-1.5 text-sm transition-colors ${isAllOptionsGenerated || isLoading
-              ? 'border-stone-200 text-stone-300 bg-stone-50 cursor-not-allowed'
-                : 'border-stone-300 text-stone-600 hover:bg-stone-50 hover:border-stone-400 cursor-pointer'
-            }`}
+          className={`w-full py-3 mb-6 border-2 border-dashed rounded-2xl font-bold flex items-center justify-center gap-2 text-sm transition-all ${
+            isAllOptionsGenerated || isLoading
+              ? 'border-[#3c3876]/40 text-[#f5e6ab]/30 bg-[#0f0f28]/30 cursor-not-allowed'
+              : 'border-[#5f448a] text-[#e79f4d] hover:bg-[#5f448a]/30 hover:border-[#e79f4d] cursor-pointer'
+          }`}
         >
-          <span className="text-base leading-none">＋</span>
-          <span>行を追加する</span>
+          <span className="text-lg font-bold leading-none">＋</span>
+          <span>単語行を追加する</span>
         </button>
 
-        {/* 
-          エラーメッセージの表示エリア
-          色覚や視認性に配慮し、背景を薄い赤、文字をはっきりした濃い赤（rose-700）で表示します。
-        */}
+        {/* エラーメッセージ表示エリア */}
         {errorMessage && (
-          <div className="mb-4 p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-700 leading-relaxed">
-            {errorMessage}
+          <div className="mb-6 p-4 bg-[#823228]/40 border border-[#ba666b]/60 rounded-2xl text-xs text-[#f5e6ab] leading-relaxed flex items-start gap-2 shadow-md">
+            <span className="text-base shrink-0">⚠️</span>
+            <div>{errorMessage}</div>
           </div>
         )}
 
-        {/*
-          すべての行の翻訳候補が揃っていない場合は「翻訳を取得」を表示します。
-          全行の候補が揃った後は「この単語で登録する」に切り替えます。
-          メインカラーは sky-600 (#0284c7) / sky-700 (#0369a1) を適用しています。
-        */}
+        {/* アクションボタン */}
         {!isAllOptionsGenerated ? (
           <button
             type="button"
-            // 英語が未入力、または通信中の場合はボタンを押せないようにします。
             disabled={!hasEnglishInput || isLoading}
             onClick={handleFetchTranslations}
-            className={`w-full py-3 font-bold rounded-xl text-sm transition-colors ${hasEnglishInput && !isLoading
-              ? 'bg-sky-600 text-white hover:bg-sky-700 shadow-sm cursor-pointer'
-              : 'bg-stone-200 text-stone-400 cursor-not-allowed'
-              }`}
+            className={`w-full py-3.5 font-bold rounded-2xl text-sm transition-all flex items-center justify-center gap-2 ${
+              hasEnglishInput && !isLoading
+                ? 'sunset-btn-primary cursor-pointer'
+                : 'bg-[#3c3876]/40 text-[#f5e6ab]/30 border border-[#3c3876]/60 cursor-not-allowed'
+            }`}
           >
-            {isLoading ? '翻訳を取得中...' : '翻訳を取得'}
+            {isLoading ? (
+              <>
+                <span className="animate-spin h-4 w-4 border-2 border-[#f5e6ab] border-t-transparent rounded-full"></span>
+                <span>翻訳を取得中...</span>
+              </>
+            ) : (
+              <>
+                <span> 翻訳を取得</span>
+              </>
+            )}
           </button>
         ) : (
           <button
             type="button"
-            // 全行の日本語訳が選択されていなければ、登録処理を実行できません。
             disabled={!isAllJapaneseSelected || isLoading}
             onClick={handleRegisterSubmit}
-            className={`w-full py-3 font-bold rounded-xl text-sm transition-colors ${isAllJapaneseSelected && !isLoading
-              ? 'bg-sky-600 text-white hover:bg-sky-700 shadow-sm cursor-pointer'
-              : 'bg-stone-200 text-stone-400 cursor-not-allowed'
-              }`}
+            className={`w-full py-3.5 font-bold rounded-2xl text-sm transition-all flex items-center justify-center gap-2 ${
+              isAllJapaneseSelected && !isLoading
+                ? 'bg-gradient-to-r from-[#dd7c5d] via-[#ba666b] to-[#5f448a] text-white hover:brightness-110 shadow-lg cursor-pointer'
+                : 'bg-[#3c3876]/40 text-[#f5e6ab]/30 border border-[#3c3876]/60 cursor-not-allowed'
+            }`}
           >
-            {isLoading ? '登録中...' : 'この単語で登録する'}
+            {isLoading ? (
+              <>
+                <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></span>
+                <span>登録中...</span>
+              </>
+            ) : (
+              <>
+                <span>この単語で物語をつくる ➔</span>
+              </>
+            )}
           </button>
         )}
       </div>
     </main>
   );
 }
+

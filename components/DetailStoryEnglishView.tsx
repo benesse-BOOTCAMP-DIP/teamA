@@ -14,7 +14,6 @@ export default function DetailStoryEnglishView({
   story,
   words = [],
 }: DetailStoryEnglishViewProps) {
-  // 返り値: 本文中の学習対象語をハイライトしたReactノードの配列
   const renderHighlightedStory = () => {
     const allSurfaces = Array.from(
       new Map(
@@ -50,7 +49,7 @@ export default function DetailStoryEnglishView({
       parts.push(
         <mark
           key={`${matchIndex}-${matchedText}`}
-          className="bg-amber-100 text-amber-900 font-semibold px-1 py-0.5 rounded border-b-2 border-amber-300"
+          className="bg-gradient-to-r from-[#6c3224] to-[#823228] text-[#f5e6ab] font-bold px-2 py-0.5 rounded-lg border border-[#e79f4d]/60 shadow-sm inline-block my-0.5"
         >
           {matchedText}
         </mark>,
@@ -68,37 +67,39 @@ export default function DetailStoryEnglishView({
   return (
     <div>
       {/* 物語タイトル */}
-      <h1 className="text-xl font-bold bg-white rounded-2xl p-6 shadow-sm border border-stone-200 mb-3 flex items-center gap-2">
-        <span className="text-sky-600 leading-none">📖</span>
-        {title || "無題の物語"}
+      <h1 className="text-xl sm:text-2xl font-extrabold sunset-glass-card rounded-3xl p-6 mb-4 flex items-center gap-3 border border-[#e79f4d]/30 shadow-xl">
+
+        <span className="sunset-gradient-text">{title || "無題の物語"}</span>
       </h1>
 
-      <div className="bg-white rounded-2xl p-6 shadow-sm border border-stone-200 mb-3">
-          {/* ハイライト付き英文本文 */}
-        <div className="bg-stone-50 rounded-xl p-5 border border-stone-100">
-          <p className="text-base sm:text-lg leading-relaxed text-stone-700 font-serif whitespace-pre-wrap">
+      <div className="sunset-glass-card rounded-3xl p-6 sm:p-8 mb-4 border border-[#e79f4d]/30 shadow-xl">
+        {/* ハイライト付き英文本文 */}
+        <div className="bg-[#0f0f28]/75 rounded-2xl p-5 sm:p-6 border border-[#3c3876]/80 shadow-inner">
+          <p className="text-base sm:text-lg leading-relaxed text-[#f5e6ab] font-serif whitespace-pre-wrap">
             {renderHighlightedStory()}
           </p>
         </div>
 
         {/* 登場単語のタグ一覧 */}
         {words.length > 0 && (
-          <div className="mt-4 pt-3 flex flex-wrap items-center gap-2">
-            <span className="text-xs font-semibold text-stone-400">対象単語:</span>
+          <div className="mt-5 pt-4 border-t border-[#3c3876]/50 flex flex-wrap items-center gap-2">
+            <span className="text-xs font-semibold text-[#e79f4d] flex items-center gap-1">
+  学習対象単語:
+            </span>
             {words.map((item) => (
               <span
                 key={item.meaningId}
-                className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-sky-50 text-sky-700 border border-sky-100"
+                className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-[#5f448a]/50 text-[#f5e6ab] border border-[#e79f4d]/40 shadow-sm"
               >
                 {item.english}
                 {item.surfaces?.[0] && item.surfaces[0].toLowerCase() !== item.english.toLowerCase() && (
-                  <span className="text-sky-400 ml-1">({item.surfaces[0]})</span>
+                  <span className="text-[#e99d6b] ml-1 font-normal">({item.surfaces[0]})</span>
                 )}
               </span>
             ))}
           </div>
         )}
-        </div>
+      </div>
     </div>
   );
 }

@@ -1,34 +1,26 @@
 :root {
-  /* 1. ベースカラー */
-  --color-bg-base: #fafaf9;
-  --color-bg-surface: #ffffff;
+  /* Sunset Palette */
+  --color-bg-base: transparent;
+  --color-bg-surface: rgba(39, 45, 100, 0.65);
+  
+  --color-primary: #dd7c5d;
+  --color-primary-hover: #e99d6b;
+  --color-primary-text: #f5e6ab;
 
-  /* 2. メインカラー */
-  --color-primary: #0284c7;
-  --color-primary-hover: #0369a1;
-  --color-primary-text: #ffffff;
+  --color-highlight-bg: #823228;
+  --color-highlight-border: #e79f4d;
+  --color-highlight-text: #f5e6ab;
 
-  /* 3. アクセント / ハイライト */
-  --color-highlight-bg: #fef3c7;
-  --color-highlight-border: #f59e0b;
-  --color-highlight-text: #1c1917;
-
-  /* 4. 基本テキスト・枠線 */
-  --color-text-main: #292524;
-  --color-text-sub: #78716c;
-  --color-border: #e7e5e4;
+  --color-text-main: #f5e6ab;
+  --color-text-sub: rgba(245, 230, 171, 0.7);
+  --color-border: rgba(231, 159, 77, 0.25);
 }
 
-
-/* ========================================
-   1. コンテナ・全体レイアウト
-   ======================================== */
 :global(.container) {
-  max-width: 393px;
-  min-height: 100vh;
+  max-width: 640px;
+  min-height: calc(100vh - 120px);
   margin: 0 auto;
   padding: 32px 16px;
-  background-color: var(--color-bg-base);
   color: var(--color-text-main);
   box-sizing: border-box;
 }
@@ -39,138 +31,151 @@
   align-items: center;
 }
 
-/* ========================================
-   キーワード検索
-   ======================================== */
-.searchInput{
-  background-color: var(--color-bg-surface);
-  width: 80%;
-  margin: 20px;
+.searchInput {
+  background-color: rgba(25, 24, 59, 0.85);
+  border: 1px solid rgba(231, 159, 77, 0.3);
+  border-radius: 1rem;
+  color: #f5e6ab;
+  padding: 12px 18px;
+  width: 100%;
+  font-size: 0.95rem;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+  transition: all 0.2s ease;
+  margin-bottom: 20px;
 }
 
-/* ========================================
-   2. タブ切り替え
-   ======================================== */
+.searchInput::placeholder {
+  color: rgba(245, 230, 171, 0.4);
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: #e79f4d;
+  box-shadow: 0 0 12px rgba(231, 159, 77, 0.3);
+}
+
 .tabs {
   display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
 }
 
 .tab {
   flex: 1;
-  padding: 10px 16px;
-  font-size: 0.875rem;
+  padding: 12px 16px;
+  font-size: 0.9rem;
   font-weight: 700;
-  color: var(--color-text-sub);
-  background-color: var(--color-bg-surface);
-  border: 1px solid var(--color-border);
-  border-bottom:1px solid var(--color-primary);
-   clip-path: polygon(
-    8% 0,
-    92% 0,
-    100% 100%,
-    0 100%
-  );
+  color: rgba(245, 230, 171, 0.6);
+  background: rgba(60, 56, 118, 0.4);
+  border: 1px solid rgba(231, 159, 77, 0.2);
+  border-radius: 1rem;
   cursor: pointer;
-  transition: all 0.15s ease-in-out;
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease-in-out;
+}
+
+.tab:hover {
+  background: rgba(95, 68, 138, 0.5);
+  color: #f5e6ab;
 }
 
 .tab.active {
-  background-color: var(--color-primary);
-  color: var(--color-primary-text);
-  border-color: var(--color-primary);
+  background: linear-gradient(135deg, #dd7c5d 0%, #ba666b 100%);
+  color: #ffffff;
+  border-color: rgba(231, 159, 77, 0.5);
+  box-shadow: 0 4px 15px rgba(221, 124, 93, 0.3);
 }
 
-/* ========================================
-   3. 物語
-   ======================================== */
-.story{
-  border: 1px solid var(--color-border);
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  background-color: var(--color-bg-surface);
-  padding: 0 16px;
-  /* 単語タブのテーブル高さと統一 thead 50px + tbody 630px*/
+.story {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
   max-height: 680px;
   overflow-y: auto;
+  padding-right: 4px;
 }
 
-.title{
-  font-size: 1rem;
-  font-weight: 700;
-  color: var(--color-text-main);
-  /* margin: 8px 0; */
-}
-
-.content {
-  margin: 8px 0;
-  padding-bottom: 8px;
-  border-bottom: 1px solid var(--color-border);
+.storyContainer {
+  background: rgba(39, 45, 100, 0.65);
+  backdrop-filter: blur(12px);
+  border-radius: 1.25rem;
+  padding: 1.25rem;
+  border: 1px solid rgba(231, 159, 77, 0.25);
+  box-shadow: 0 8px 32px 0 rgba(15, 15, 40, 0.37);
   display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  transition: all 0.2s ease-in-out;
 }
 
-.titleLink{
-  color: var(--color-primary);
-  font-weight: 800;
+.storyContainer:hover {
+  border-color: rgba(231, 159, 77, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(221, 124, 93, 0.2);
 }
 
+.title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #f5e6ab;
+  margin-bottom: 6px;
+}
 
 .storyText {
   font-size: 0.875rem;
-  color: var(--color-text-sub);
-  line-height: 1.4;
+  color: rgba(245, 230, 171, 0.7);
+  line-height: 1.5;
   display: -webkit-box;
   -webkit-box-orient: vertical;
-  -webkit-line-clamp: 3;
+  -webkit-line-clamp: 2;
   overflow: hidden;
 }
 
-/* タイトルのボタン */
-.storyContainer {
- background-color: #ffffff;
-  border-radius: 1rem;
-  padding: 1rem;
-  box-shadow: 0 2px 2px 0 rgb(0 0 0 / 0.05);
-  border: 1px solid var(--color-primary-hover);
+.titleLink {
+  color: #e79f4d;
+  font-weight: 800;
+  font-size: 1.2rem;
+  flex-shrink: 0;
 }
-/* ========================================
-   4. 単語テーブル
-   ======================================== */
+
+/* 単語テーブル */
 .wordTable {
   width: 100%;
   table-layout: fixed;
   border-collapse: separate;
   border-spacing: 0;
-  background-color: var(--color-bg-surface);
+  background: rgba(39, 45, 100, 0.65);
+  backdrop-filter: blur(12px);
+  border-radius: 1.25rem;
   overflow: hidden;
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  border: 1px solid var(--color-border);
-  border-collapse: collapse;
+  border: 1px solid rgba(231, 159, 77, 0.25);
+  box-shadow: 0 8px 32px 0 rgba(15, 15, 40, 0.37);
 }
 
 .wordTable th {
-  background-color: var(--color-bg-base);
-  color: var(--color-text-sub);
+  background: rgba(15, 15, 40, 0.85);
+  color: #e79f4d;
   font-weight: 700;
-  font-size: 0.875rem;
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--color-border);
-  height: 50px;
+  font-size: 0.9rem;
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(231, 159, 77, 0.25);
 }
 
 .wordTable td {
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--color-border);
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(60, 56, 118, 0.4);
   vertical-align: middle;
-  font-size: 0.875rem;
-  color: var(--color-text-main);
-}
-
-.wordTable tbody tr:last-child td {
-  border-bottom: none;
+  font-size: 0.9rem;
+  color: #f5e6ab;
 }
 
 .wordTable tbody tr:hover {
-  background-color: #f5f5f4;
+  background-color: rgba(95, 68, 138, 0.3);
+}
+
+.wordTable td:first-child {
+  font-weight: 700;
+  color: #f5e6ab;
 }
 
 .tableRow {
@@ -179,43 +184,4 @@
 
 .textCenter {
   text-align: center;
-}
-
-.wordTable td:first-child {
-  font-weight: 600;
-  color: var(--color-text-main);
-}
-
-.wordTable td p {
-  margin: 2px 0;
-  line-height: 1.4;
-  color: var(--color-text-main);
-}
-
-.wordTable td p:first-child {
-  margin-top: 0;
-}
-
-.wordTable td p:last-child {
-  margin-bottom: 0;
-}
-
-/* 単語タブ内はスクロールで1画面に収める */
-.wordTable thead {
-  display: table;
-  width: 100%;
-  table-layout: fixed;
-}
-
-.wordTable tbody {
-  display: block;
-  max-height: 630px;
-  overflow-y: auto;
-  width: 100%;
-}
-
-.wordTable tbody tr {
-  display: table;
-  width: 100%;
-  table-layout: fixed;
-}
+}
