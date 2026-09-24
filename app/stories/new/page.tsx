@@ -12,6 +12,15 @@ interface GeneratedStoryResponse {
   story: string;
   japaneseStory: string;
   words: StoryWordInfo[];
+  imageUrl?: string;
+}
+
+interface GenerateImageResponse {
+  success: boolean;
+  image?: {
+    url: string;
+  };
+  error?: string;
 }
 
 interface RegisteredWord {
@@ -54,9 +63,42 @@ export default function StoryGeneratorPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isSaving, setIsSaving] = useState<boolean>(false);
+  const [isImageLoading, setIsImageLoading] = useState<boolean>(false);
   const [isJapaneseVisible, setIsJapaneseVisible] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>('');
+  const [imageErrorMessage, setImageErrorMessage] = useState<string>('');
   const [storyData, setStoryData] = useState<GeneratedStoryResponse | null>(null);
+
+  const generateImage = useCallback(async (story: GeneratedStoryResponse) => {
+    setIsImageLoading(true);
+    setImageErrorMessage('');
+
+    try {
+      const imageRes = await fetch('/api/stories/generate-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: story.title, story: story.story }),
+      });
+      const imageJson: GenerateImageResponse = await imageRes.json().catch(() => ({}));
+
+      if (!imageRes.ok || !imageJson.success || !imageJson.image?.url) {
+        throw new Error(
+          imageRes.status === 429
+            ? 'AIの利用制限に達しました。しばらく時間を置いてから再度お試しください'
+            : imageJson.error || '画像の生成に失敗しました',
+        );
+      }
+
+      const updatedStory = { ...story, imageUrl: imageJson.image.url };
+      setStoryData(updatedStory);
+      sessionStorage.setItem('generatedStoryData', JSON.stringify(updatedStory));
+    } catch (error: unknown) {
+      console.error('画像生成エラー:', error);
+      setImageErrorMessage(error instanceof Error ? error.message : '画像の生成に失敗しました');
+    } finally {
+      setIsImageLoading(false);
+    }
+  }, []);
 
   // 物語生成処理（再生成ボタンからも呼び出せるよう関数化）
   const generateStory = useCallback(async () => {
@@ -106,14 +148,19 @@ export default function StoryGeneratorPage() {
 
       if (!genRes.ok) {
         throw new Error(
-          genRes.status >= 500
+          genRes.status === 429
+            ? 'AIの利用制限に達しました。しばらく時間を置いてから再度お試しください'
+            : genRes.status >= 500
             ? '物語生成サーバーでエラーが発生しました。時間を置いて再試行してください。'
             : genJson.error || `物語の生成に失敗しました (Status: ${genRes.status})`,
         );
       }
 
-      setStoryData(genJson);
+      const generatedStory: GeneratedStoryResponse = genJson;
+      setStoryData(generatedStory);
+      sessionStorage.setItem('generatedStoryData', JSON.stringify(generatedStory));
       setIsJapaneseVisible(false);
+      void generateImage(generatedStory);
     } catch (error: unknown) {
       console.error('物語生成エラー:', error);
       const message = error instanceof Error ? error.message : '';
@@ -121,7 +168,7 @@ export default function StoryGeneratorPage() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [generateImage]);
 
   // 返り値: 物語をDBへ保存して一覧画面へ遷移するPromise
   const saveStoryAndNavigate = async (): Promise<void> => {
@@ -139,6 +186,7 @@ export default function StoryGeneratorPage() {
           title: storyData.title,
           story: storyData.story,
           japaneseStory: storyData.japaneseStory,
+          imageUrl: storyData.imageUrl,
           words: storyData.words.map((word) => ({
             meaningId: word.meaningId,
             surfaces: word.surfaces || [],
@@ -228,7 +276,12 @@ export default function StoryGeneratorPage() {
               title={storyData.title}
               story={storyData.story}
               words={storyData.words}
+              imageUrl={storyData.imageUrl}
             />
+
+            {imageErrorMessage && (
+              <p className="mb-4 text-xs text-rose-600">{imageErrorMessage}</p>
+            )}
 
             <section className="mb-4 bg-white rounded-2xl border border-stone-200 shadow-sm">
               <button
@@ -255,10 +308,21 @@ export default function StoryGeneratorPage() {
               <button
                 type="button"
                 onClick={generateStory}
+                disabled={isLoading || isImageLoading}
                 className="w-full py-2.5 bg-white border border-stone-300 text-stone-700 hover:bg-stone-50 font-bold rounded-xl text-sm transition shadow-sm flex items-center justify-center gap-1.5"
               >
                 <span>🔄</span>
                 <span>別の物語を再生成する</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => void generateImage(storyData)}
+                disabled={isImageLoading || isLoading}
+                className="w-full py-2.5 bg-white border border-stone-300 text-stone-700 hover:bg-stone-50 font-bold rounded-xl text-sm transition shadow-sm flex items-center justify-center gap-1.5 disabled:opacity-50"
+              >
+                <span>🖼️</span>
+                <span>{isImageLoading ? '画像生成中...' : '画像を再生成する'}</span>
               </button>
 
               {/* 一覧画面へ遷移するボタン */}

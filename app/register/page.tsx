@@ -147,7 +147,11 @@ export default function WordRegisterPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || '翻訳候補の取得に失敗しました');
+        throw new Error(
+          response.status === 429
+            ? 'AIの利用制限に達しました。しばらく時間を置いてから再度お試しください'
+            : data.error || '翻訳候補の取得に失敗しました',
+        );
       }
 
       // レスポンス受け取り { translations: [{ english: "...", options: [...] }] }
