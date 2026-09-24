@@ -16,31 +16,6 @@ export interface StoryDetailResponse {
   words: StoryDetailWord[];
 }
 
-// const stories: StoryDetailResponse[] = [
-//   {
-//     storyId: 1,
-//     title: "朝の公園ルーティン",
-//     story: "Every morning, I ran to the park to enjoy the fresh air.",
-//     japaneseStory:
-//       "毎朝、私は新鮮な空気を楽しむために公園へ走りました。",
-//     createdAt: "2026-09-16T10:00:00Z",
-//     words: [
-//       {
-//         meaningId: 1,
-//         english: "run",
-//         japanese: "走る",
-//         surfaces: ["ran"],
-//       },
-//       {
-//         meaningId: 2,
-//         english: "park",
-//         japanese: "公園",
-//         surfaces: ["park"],
-//       },
-//     ],
-//   },
-// ];
-
 const stories: StoryDetailResponse[] = [
      { storyId: 1,
        title: "朝の公園ルーティン", 
