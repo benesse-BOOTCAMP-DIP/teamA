@@ -113,8 +113,6 @@
 
 .contentDisplay {
   margin: 8px 0;
-  display: flex;
-  overflow-y: auto;
 }
 
 .titleLink{
@@ -131,9 +129,25 @@
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
   overflow: hidden;
+  height: 50%;
+  margin: 8px;
 }
 
-/* タイトルのボタン */
+.storyImage{
+  width: 50%;
+  border-radius: 8px;
+}
+
+.storyTitle{
+  display: flex;
+  justify-content: space-between;
+}
+
+.storyDetail{
+  display: flex;
+  align-items: center;
+}
+
 .storyContainer {
  background-color: #ffffff;
   border-radius: 1rem;
