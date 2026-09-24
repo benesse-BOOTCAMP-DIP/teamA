@@ -6,7 +6,6 @@ import type { StoryDetailResponse } from "@/app/api/stories/[id]/route";
 import styles from "./page.module.css";
 import StoryJapaneseViews from "@/components/storyJapaneseView";
 import DetailStoryEnglishView from "@/components/DetailStoryEnglishView";
-import Link from "next/link";
 
 
 export default function StoryDetailPages() {
@@ -41,22 +40,15 @@ export default function StoryDetailPages() {
 
   return (
     <div className="container">
-      <div className={styles.header}>
-        <h1>物語詳細画面</h1>
-        <Link href={`/list`}>
-            <h3>一覧画面へ</h3>
-        </Link>
-      </div>
       {isLoading?(
         <div className={styles.loadingContainer}>
           <div className={`${styles.loading} ${styles.card}`}>
             <p>読み込み中...</p>
           </div>
         </div>
-
       ):story?(
          <div>
-          <DetailStoryEnglishView title={story.title} story={story.story} words={story.words} />
+          <DetailStoryEnglishView title={story.title} imageUrl={story.imageUrl} story={story.story} words={story.words} />
           <div className={styles.boxCenter}>
              <button className="bg-white rounded-2xl p-3 shadow-sm border border-stone-200 mb-3 w-full"  onClick={() => setIsJapaneseVisible(!isJapaneseVisible)} >
               {isJapaneseVisible ? "和訳を閉じる　▲" : "和訳を見る　▼"} 

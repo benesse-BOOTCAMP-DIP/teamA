@@ -22,8 +22,7 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
-  /* 単語タブのテーブル高さと統一 thead 50px + tbody 630px*/
-  flex: 1;
+    flex: 1;
 }
 
 .loading{
@@ -49,13 +48,6 @@
   width: 100%;
 }
 
-/* ========================================
-  ヘッダー
-   ======================================== */
-  .header{
-    display: flex;
-    justify-content: space-around;
-  }
 
   .boxCenter {
   display: flex;
