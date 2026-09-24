@@ -74,6 +74,12 @@ export default function StoryEnglishView({
 
   return (
     <div className="bg-white rounded-2xl p-6 shadow-sm border border-stone-200 mb-6">
+      {imageUrl && (
+        <div className="mb-4 overflow-hidden rounded-xl border border-stone-100">
+          <img src={imageUrl} alt={title || '物語の画像'} className="h-auto w-full" />
+        </div>
+      )}
+
       {/* 物語タイトル */}
       <h2 className="text-xl font-bold text-stone-800 mb-4 pb-2 border-b border-stone-100 flex items-center gap-2">
         <span className="text-sky-600">📖</span>
@@ -86,12 +92,6 @@ export default function StoryEnglishView({
           {renderHighlightedStory()}
         </p>
       </div>
-
-      {imageUrl && (
-        <div className="mt-4 overflow-hidden rounded-xl border border-stone-100">
-          <img src={imageUrl} alt={title || '物語の画像'} className="h-auto w-full" />
-        </div>
-      )}
 
       {/* 登場単語のタグ一覧 */}
       {words.length > 0 && (
