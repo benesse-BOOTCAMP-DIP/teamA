@@ -74,7 +74,7 @@ export default function StoryGeneratorPage() {
     setImageErrorMessage('');
 
     try {
-      const imageRes = await fetch('/api/mocks/stories/generate-image', {
+      const imageRes = await fetch('/api/stories/generate-image', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ title: story.title, story: story.story }),
@@ -186,6 +186,7 @@ export default function StoryGeneratorPage() {
           title: storyData.title,
           story: storyData.story,
           japaneseStory: storyData.japaneseStory,
+          imageUrl: storyData.imageUrl,
           words: storyData.words.map((word) => ({
             meaningId: word.meaningId,
             surfaces: word.surfaces || [],
