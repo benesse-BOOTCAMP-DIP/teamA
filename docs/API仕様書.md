@@ -305,6 +305,16 @@ export interface WordsListResponse {
 }
 ```
 
+#### 利用制限時 `429 Too Many Requests`
+
+AIの無料枠制限や短時間のアクセス集中時に返ります。
+
+```json
+{
+  "error": "AIの利用制限に達しました。しばらく時間を置いてから再度お試しください"
+}
+```
+
 #### API/サーバーエラー時 `500 Internal Server Error`
 
 環境変数 `GEMINI_API_KEY` の未設定や、Gemini API 呼び出しの失敗時などに返ります。
@@ -395,9 +405,10 @@ export interface TranslateResponse {
 | `words[].word`      | `string`               | 元の英単語                                                  |
 | `words[].surfaces`  | `string[]`             | 物語の中で実際に使われた形（活用形など、例: `run` ➜ `ran`） |
 
-#### エラー時 `400 Bad Request` / `500 Internal Server Error`
+#### エラー時 `400 Bad Request` / `429 Too Many Requests` / `500 Internal Server Error`
 
 - `400`: `単語の配列（words）が指定されていません`
+- `429`: `AIの利用制限に達しました。しばらく時間を置いてから再度お試しください`
 - `500`: `物語の生成に失敗しました`
 
 ### TypeScript 型定義 (`@/app/api/stories/generate/route`)
@@ -561,19 +572,19 @@ export interface RegisterStoryResponse {
 }
 ```
 
-| フィールド          | 型                  | 説明                                               |
-| :------------------ | :------------------ | :------------------------------------------------- |
-| `storyId`           | `number`            | 物語ID                                             |
-| `title`             | `string`            | 物語タイトル（日本語）                             |
-| `story`             | `string`            | 英文本文                                           |
-| `japaneseStory`     | `string`            | 和訳本文                                           |
-| `imageUrl`          | `string`            | 物語の挿絵画像URL（未設定時は `null` または空文字）|
-| `createdAt`         | `string`            | 作成日時                                           |
-| `words`             | `StoryDetailWord[]` | 物語で使用されている単語リスト                     |
-| `words[].meaningId` | `number`            | 意味ID                                             |
-| `words[].english`   | `string`            | 英単語                                             |
-| `words[].japanese`  | `string`            | 日本語訳                                           |
-| `words[].surfaces`  | `string[]`          | 物語中での実際の表記（活用形など）                 |
+| フィールド          | 型                  | 説明                                                |
+| :------------------ | :------------------ | :-------------------------------------------------- |
+| `storyId`           | `number`            | 物語ID                                              |
+| `title`             | `string`            | 物語タイトル（日本語）                              |
+| `story`             | `string`            | 英文本文                                            |
+| `japaneseStory`     | `string`            | 和訳本文                                            |
+| `imageUrl`          | `string`            | 物語の挿絵画像URL（未設定時は `null` または空文字） |
+| `createdAt`         | `string`            | 作成日時                                            |
+| `words`             | `StoryDetailWord[]` | 物語で使用されている単語リスト                      |
+| `words[].meaningId` | `number`            | 意味ID                                              |
+| `words[].english`   | `string`            | 英単語                                              |
+| `words[].japanese`  | `string`            | 日本語訳                                            |
+| `words[].surfaces`  | `string[]`          | 物語中での実際の表記（活用形など）                  |
 
 ### TypeScript 型定義
 
@@ -663,10 +674,10 @@ export interface DeleteStoryResponse {
 }
 ```
 
-| フィールド | 型       | 必須 | 説明                                           |
-| :--------- | :------- | :--- | :--------------------------------------------- |
-| `story`    | `string` | ○    | 物語の英文本文（画像生成の元となる英文）       |
-| `title`    | `string` | -    | 物語のタイトル（日本語、任意）                 |
+| フィールド | 型       | 必須 | 説明                                     |
+| :--------- | :------- | :--- | :--------------------------------------- |
+| `story`    | `string` | ○    | 物語の英文本文（画像生成の元となる英文） |
+| `title`    | `string` | -    | 物語のタイトル（日本語、任意）           |
 
 ### 📤 レスポンス（バック → フロント）
 
@@ -689,9 +700,10 @@ export interface DeleteStoryResponse {
 | `image.url` | `string`         | Supabase Storage の公開画像URL                 |
 | `image.alt` | `string`         | 画像の代替テキスト（アクセシビリティ・説明用） |
 
-#### エラー時 `400 Bad Request` / `500 Internal Server Error`
+#### エラー時 `400 Bad Request` / `429 Too Many Requests` / `500 Internal Server Error`
 
 - `400`: `物語の本文（story）を入力してください`
+- `429`: `AIの利用制限に達しました。しばらく時間を置いてから再度お試しください`
 - `500`: `画像の生成に失敗しました`
 
 ### TypeScript 型定義 (`@/app/api/stories/generate-image/route`)
@@ -713,6 +725,5 @@ export interface GenerateImageResponse {
   error?: string;
 }
 ```
-
 
 ---
