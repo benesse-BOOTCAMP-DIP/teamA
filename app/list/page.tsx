@@ -22,6 +22,7 @@ type Story={
   id:number;
   title:string;
   content:string;
+  imageUrl?: string | null;
 };
 
 export default function Tabs() {
@@ -47,6 +48,7 @@ export default function Tabs() {
 
         const data: WordsListResponse = await response.json();
 
+
         //同じ英単語の意味を配列に保持
         const groupedWords = data.words.reduce<GroupedWord[]>((result, word) => {
           const existingWord = result.find(
@@ -69,7 +71,7 @@ export default function Tabs() {
         //物語データの取得
         setStories(data.stories);
       } catch (error) {
-        alert("データの取得に失敗しました");
+        alert("予期しないエラーが発生しました");
       } finally {
         // ローディング終了
         setIsLoading(false);
@@ -130,12 +132,25 @@ export default function Tabs() {
               </div>
             ) : (
             filteredStories.map((story) => (
-              <div key={story.id}className={`${styles.content} ${styles.storyContainer}`} >
-                 <Link href={`/list/${story.id}`}>
-                     <h3 className={styles.title}>{story.title}</h3>                         
-                     <p className={styles.storyText}>{story.content}</p>
+              <div key={story.id}className={`${styles.contentDisplay} ${styles.storyContainer}`} >
+                <Link href={`/list/${story.id}`}>
+                  <div>
+                    <div className={styles.storyTitle}>
+                      <h3 className={styles.title}>{story.title}</h3>  
+                      <h3 className={styles.titleLink}>＞</h3>
+                    </div>
+                    <div className={styles.storyDetail}>
+                      {story.imageUrl && (
+                      <img
+                        className={styles.storyImage}
+                        src={story.imageUrl}
+                        alt="物語のイメージ画像"
+                      />
+                    )} 
+                    <p className={styles.storyText}>{story.content}</p>
+                    </div>
+                  </div>
                  </Link>
-                 <h3 className={styles.titleLink}>＞</h3>
               </div>
             ))
           )}
