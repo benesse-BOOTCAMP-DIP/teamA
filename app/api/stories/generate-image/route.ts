@@ -36,10 +36,15 @@ export async function POST(request: Request) {
     const body: GenerateImageRequest = await request.json();
 
     // 2. 入力値バリデーション
-    if (!body || !body.story || typeof body.story !== "string" || body.story.trim() === "") {
+    if (
+      !body ||
+      !body.story ||
+      typeof body.story !== "string" ||
+      body.story.trim() === ""
+    ) {
       return NextResponse.json(
         { error: "物語の本文（story）を入力してください" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -58,7 +63,7 @@ export async function POST(request: Request) {
       console.error("画像生成APIエラー:", imageRes.status, imageRes.statusText);
       return NextResponse.json(
         { error: "画像の生成に失敗しました" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -80,7 +85,7 @@ export async function POST(request: Request) {
       console.error("Supabase Storage アップロードエラー:", uploadError);
       return NextResponse.json(
         { error: "画像の生成に失敗しました" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -105,7 +110,7 @@ export async function POST(request: Request) {
     console.error("画像生成処理で予期せぬエラー:", err);
     return NextResponse.json(
       { error: "画像の生成に失敗しました" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
