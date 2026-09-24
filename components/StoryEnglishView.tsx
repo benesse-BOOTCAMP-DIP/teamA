@@ -12,12 +12,14 @@ interface StoryEnglishViewProps {
   title: string;
   story: string;
   words?: StoryWordInfo[];
+  imageUrl?: string;
 }
 
 export default function StoryEnglishView({
   title,
   story,
   words = [],
+  imageUrl,
 }: StoryEnglishViewProps) {
   // 返り値: 本文中の学習対象語をハイライトしたReactノードの配列
   const renderHighlightedStory = () => {
@@ -84,6 +86,12 @@ export default function StoryEnglishView({
           {renderHighlightedStory()}
         </p>
       </div>
+
+      {imageUrl && (
+        <div className="mt-4 overflow-hidden rounded-xl border border-stone-100">
+          <img src={imageUrl} alt={title || '物語の画像'} className="h-auto w-full" />
+        </div>
+      )}
 
       {/* 登場単語のタグ一覧 */}
       {words.length > 0 && (
