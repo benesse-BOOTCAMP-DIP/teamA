@@ -60,7 +60,6 @@ export async function POST(request: Request) {
 
     const imageRes = await fetch(generateUrl);
     if (!imageRes.ok) {
-      console.error("画像生成APIエラー:", imageRes.status, imageRes.statusText);
       return NextResponse.json(
         { error: "画像の生成に失敗しました" },
         { status: 500 },
@@ -82,7 +81,6 @@ export async function POST(request: Request) {
       });
 
     if (uploadError) {
-      console.error("Supabase Storage アップロードエラー:", uploadError);
       return NextResponse.json(
         { error: "画像の生成に失敗しました" },
         { status: 500 },
@@ -107,7 +105,6 @@ export async function POST(request: Request) {
 
     return NextResponse.json(responseData, { status: 200 });
   } catch (err) {
-    console.error("画像生成処理で予期せぬエラー:", err);
     return NextResponse.json(
       { error: "画像の生成に失敗しました" },
       { status: 500 },
