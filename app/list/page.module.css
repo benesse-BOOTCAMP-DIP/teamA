@@ -110,10 +110,8 @@
   color: var(--color-text-main);
 }
 
-.content {
+.contentDisplay {
   margin: 8px 0;
-  padding-bottom: 8px;
-  border-bottom: 1px solid var(--color-border);
   display: flex;
   overflow-y: auto;
 }

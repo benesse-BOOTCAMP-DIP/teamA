@@ -130,12 +130,14 @@ export default function Tabs() {
               </div>
             ) : (
             filteredStories.map((story) => (
-              <div key={story.id}className={`${styles.content} ${styles.storyContainer}`} >
-                 <Link href={`/list/${story.id}`}>
-                     <h3 className={styles.title}>{story.title}</h3>                         
-                     <p className={styles.storyText}>{story.content}</p>
+              <div key={story.id}className={`${styles.contentDisplay} ${styles.storyContainer}`} >
+                <Link href={`/list/${story.id}`} className={styles.contentDisplay}>
+                  <div>
+                    <h3 className={styles.title}>{story.title}</h3>    
+                    <p className={styles.storyText}>{story.content}</p>
+                  </div>
+                  <h3 className={styles.titleLink}>＞</h3>
                  </Link>
-                 <h3 className={styles.titleLink}>＞</h3>
               </div>
             ))
           )}
