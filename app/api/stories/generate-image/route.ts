@@ -43,7 +43,22 @@ export async function POST(request: Request) {
       body.story.trim() === ""
     ) {
       return NextResponse.json(
-        { error: "物語の本文（story）を入力してください" },
+        { success: false, error: "物語の本文（story）を入力してください" },
+        { status: 400 },
+      );
+    }
+
+    // 文字数制限チェック（本文: 最大1000文字、タイトル: 最大100文字）
+    if (body.story.trim().length > 1000) {
+      return NextResponse.json(
+        { success: false, error: "物語の本文は1000文字以内で入力してください" },
+        { status: 400 },
+      );
+    }
+
+    if (body.title && typeof body.title === "string" && body.title.trim().length > 100) {
+      return NextResponse.json(
+        { success: false, error: "タイトルは100文字以内で入力してください" },
         { status: 400 },
       );
     }
@@ -60,8 +75,15 @@ export async function POST(request: Request) {
 
     const imageRes = await fetch(generateUrl);
     if (!imageRes.ok) {
+      console.error("画像生成APIエラー:", imageRes.status, imageRes.statusText);
+      if (imageRes.status === 429) {
+        return NextResponse.json(
+          { success: false, error: "AIの利用制限に達しました。しばらく時間を置いてから再度お試しください" },
+          { status: 429 },
+        );
+      }
       return NextResponse.json(
-        { error: "画像の生成に失敗しました" },
+        { success: false, error: "画像の生成に失敗しました" },
         { status: 500 },
       );
     }
@@ -81,8 +103,9 @@ export async function POST(request: Request) {
       });
 
     if (uploadError) {
+      console.error("Supabase Storage アップロードエラー:", uploadError);
       return NextResponse.json(
-        { error: "画像の生成に失敗しました" },
+        { success: false, error: "画像の生成に失敗しました" },
         { status: 500 },
       );
     }
@@ -105,8 +128,9 @@ export async function POST(request: Request) {
 
     return NextResponse.json(responseData, { status: 200 });
   } catch (err) {
+    console.error("画像生成処理で予期せぬエラー:", err);
     return NextResponse.json(
-      { error: "画像の生成に失敗しました" },
+      { success: false, error: "画像の生成に失敗しました" },
       { status: 500 },
     );
   }
