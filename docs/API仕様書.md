@@ -349,7 +349,7 @@ export interface TranslateResponse {
 
 ## 4. 単語から文章（物語）生成 API
 
-選択した英単語リストをもとに、Gemini AI が自然な英語のショートストーリー、和訳、日本語タイトル、文中での実際の使用形（活用形）を生成します。
+選択した英単語リストおよび指定されたジャンル（任意）をもとに、AI が自然な英語のショートストーリー、和訳、日本語タイトル、文中での実際の使用形（活用形）を生成します。
 ※この時点ではまだデータベースには保存しません（画面でのプレビュー・確認用）。
 
 - **URL**: `POST /api/stories/generate`
@@ -360,6 +360,7 @@ export interface TranslateResponse {
 
 ```json
 {
+  "genre": "ファンタジー",
   "words": [
     { "meaningId": 1, "word": "run", "meaning": "走る" },
     { "meaningId": 2, "word": "park", "meaning": "公園" }
@@ -367,12 +368,13 @@ export interface TranslateResponse {
 }
 ```
 
-| フィールド          | 型                 | 必須 | 説明                                           |
-| :------------------ | :----------------- | :--- | :--------------------------------------------- |
-| `words`             | `StoryWordInput[]` | ○    | 物語に含める単語の配列（1件以上、推奨3〜10件） |
-| `words[].meaningId` | `number`           | ○    | 単語の意味ID（DB保存時の紐付け用）             |
-| `words[].word`      | `string`           | ○    | 英単語                                         |
-| `words[].meaning`   | `string`           | ○    | 日本語の意味・訳                               |
+| フィールド          | 型                 | 必須 | 説明                                                                                                                                                                                    |
+| :------------------ | :----------------- | :--- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `genre`             | `string`           | -    | 物語のジャンル・世界観（任意。例: `"ファンタジー"`, `"SF"`, `"日常"`, `"ミステリー"` など）。指定されたジャンルのテイストで物語が生成されます。省略時は通常の日常ストーリーになります。 |
+| `words`             | `StoryWordInput[]` | ○    | 物語に含める単語の配列（1件以上、推奨3〜10件）                                                                                                                                          |
+| `words[].meaningId` | `number`           | ○    | 単語の意味ID（DB保存時の紐付け用）                                                                                                                                                      |
+| `words[].word`      | `string`           | ○    | 英単語                                                                                                                                                                                  |
+| `words[].meaning`   | `string`           | ○    | 日本語の意味・訳                                                                                                                                                                        |
 
 ### 📤 レスポンス（バック → フロント）
 
@@ -424,6 +426,7 @@ export interface StoryWordInput {
 }
 
 export interface GenerateStoryRequest {
+  genre?: string;
   words: StoryWordInput[];
 }
 
