@@ -19,7 +19,7 @@ export function getGroqClient(): Groq {
 // 404 (model_not_found) となったため、利用可能なopenai/gpt-oss-20bを採用
 // (品質不足時は openai/gpt-oss-120b を検討)
 // このモデルは response_format: json_schema の strict モード(Gemini の responseSchema 相当)に対応している
-export const GROQ_MODEL = "openai/gpt-oss-20b";
+export const GROQ_MODEL = "openai/gpt-oss-120b";
 
 /**
  * Groq の chat.completions を Structured Outputs (json_schema, strict) で呼び出し、
