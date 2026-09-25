@@ -1,0 +1,210 @@
+.page {
+  background:
+    radial-gradient(circle at 12% 8%, rgba(186, 230, 253, 0.55), transparent 30%),
+    radial-gradient(circle at 88% 22%, rgba(253, 224, 71, 0.22), transparent 26%),
+    #fafaf9;
+}
+
+.startCard,
+.quizCard,
+.resultCard {
+  animation: cardIn 550ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.startCard {
+  border-top: 4px solid #0284c7;
+}
+
+.startButton {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.startButton::after {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -35%;
+  width: 22%;
+  background: rgba(255, 255, 255, 0.35);
+  content: "";
+  transform: skewX(-18deg);
+  transition: left 450ms ease;
+  z-index: -1;
+}
+
+.startButton:hover::after {
+  left: 115%;
+}
+
+.loading {
+  animation: loadingPulse 1.2s ease-in-out infinite;
+}
+
+.progressTrack {
+  height: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e7e5e4;
+}
+
+.progressBar {
+  height: 100%;
+  border-radius: inherit;
+  background: #0284c7;
+  transition: width 450ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.quizCard {
+  border-top: 4px solid #0ea5e9;
+}
+
+.correctBlank {
+  animation: correctPop 450ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.wrongBlank {
+  animation: wrongShake 450ms ease both;
+}
+
+.feedback {
+  animation: feedbackIn 300ms ease-out both;
+}
+
+.resultCard {
+  position: relative;
+  overflow: hidden;
+  border-top: 4px solid #f59e0b;
+}
+
+.resultCard::before,
+.resultCard::after {
+  position: absolute;
+  width: 9px;
+  height: 28px;
+  border-radius: 3px;
+  content: "";
+  opacity: 0.8;
+  animation: confettiDrop 1.8s ease-in-out infinite;
+}
+
+.resultCard::before {
+  top: 16px;
+  left: 18%;
+  background: #38bdf8;
+  transform: rotate(-24deg);
+}
+
+.resultCard::after {
+  top: 40px;
+  right: 18%;
+  background: #fbbf24;
+  transform: rotate(25deg);
+  animation-delay: 180ms;
+}
+
+.score {
+  animation: scoreReveal 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  color: #0369a1;
+  font-variant-numeric: tabular-nums;
+}
+
+@keyframes cardIn {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes loadingPulse {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes correctPop {
+  0% {
+    transform: scale(1);
+  }
+  45% {
+    transform: scale(1.08);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes wrongShake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-5px);
+  }
+  75% {
+    transform: translateX(5px);
+  }
+}
+
+@keyframes feedbackIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scoreReveal {
+  from {
+    opacity: 0;
+    transform: scale(0.72) translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes confettiDrop {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: translateY(0) rotate(20deg);
+  }
+  50% {
+    opacity: 0.95;
+    transform: translateY(16px) rotate(160deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .startCard,
+  .quizCard,
+  .resultCard,
+  .loading,
+  .correctBlank,
+  .wrongBlank,
+  .feedback,
+  .score,
+  .resultCard::before,
+  .resultCard::after {
+    animation: none;
+  }
+
+  .progressBar {
+    transition: none;
+  }
+}
