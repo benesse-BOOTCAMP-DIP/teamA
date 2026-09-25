@@ -18,11 +18,11 @@ const MAX_WORD_LENGTH = 45;
 const NOT_FOUND_TEXT = '辞書に登録されていません';
 
 const GENRE_OPTIONS = [
-  { value: '日常', label: '日常' },
-  { value: 'ファンタジー', label: 'ファンタジー' },
-  { value: 'SF', label: 'SF' },
-  { value: 'ミステリー', label: 'ミステリー' },
-  { value: '冒険', label: '冒険' },
+  '日常',
+  'ファンタジー',
+  'SF',
+  'ミステリー',
+  '冒険',
 ] as const;
 
 export default function WordRegisterPage() {
@@ -333,8 +333,8 @@ export default function WordRegisterPage() {
           >
             <option value="">ジャンルを選択してください</option>
             {GENRE_OPTIONS.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
+              <option key={option} value={option}>
+                {option}
               </option>
             ))}
           </select>
