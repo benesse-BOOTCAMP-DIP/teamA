@@ -1,0 +1,108 @@
+.row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  margin-bottom: 12px;
+}
+
+.inputArea {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  min-width: 0;
+}
+
+/* 共通の入力欄 */
+.englishInput,
+.japaneseSelect,
+.disabledInput {
+  width: 100%;
+  box-sizing: border-box;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.05);
+  font-weight: 700;
+}
+
+/* 英語入力欄 */
+.englishInput {
+  padding: 0.625rem 0.75rem;
+  background-color: white;
+  border: 1px solid #e7e5e4;
+  color: #292524;
+}
+
+.englishInput::placeholder {
+  color: #a8a29e;
+}
+
+.englishInput:focus {
+  outline: none;
+  border-color: #0284c7;
+  box-shadow: 0 0 0 1px #0284c7;
+}
+
+/* 日本語選択欄 */
+.japaneseSelect {
+  padding: 0.625rem 0.625rem;
+  background-color: white;
+  border: 1px solid #e7e5e4;
+  color: #292524;
+  cursor: pointer;
+
+  /* 長い文字をはみ出させない */
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.japaneseSelect:focus {
+  outline: none;
+  border-color: #0284c7;
+  box-shadow: 0 0 0 1px #0284c7;
+}
+
+/* 翻訳取得前の日本語欄 */
+.disabledInput {
+  padding: 0.625rem 0.75rem;
+  background-color: #f5f5f4;
+  border: 1px solid #e7e5e4;
+  color: #a8a29e;
+  cursor: not-allowed;
+
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.disabledInput::placeholder {
+  color: #a8a29e;
+}
+
+/* 削除ボタン */
+.deleteButton {
+  flex-shrink: 0;
+  /* padding: 3px; */
+  color: #a8a29e;
+  background-color: transparent;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition:
+    color 0.15s ease,
+    background-color 0.15s ease;
+}
+
+.deleteButton:hover {
+  color: #f43f5e;
+  background-color: #f5f5f4;
+}
+
+/* 削除アイコン */
+.deleteIcon {
+  width: 20px;
+  height: 20px;
+}
