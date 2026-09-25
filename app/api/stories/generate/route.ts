@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { generateJson, isRateLimitError } from "@/lib/ai/groq";
-import { assertTextsAreSafe, ModerationFlaggedError } from "@/lib/ai/moderation";
+import {
+  assertTextsAreSafe,
+  ModerationFlaggedError,
+} from "@/lib/ai/moderation";
 
 /**
  * フロントエンドから送信される単語情報の型定義
@@ -15,6 +18,7 @@ export interface StoryWordInput {
  * リクエストボディの型定義
  */
 export interface GenerateStoryRequest {
+  genre?: string;
   words: StoryWordInput[];
 }
 
@@ -93,6 +97,7 @@ const storySchema = {
  */
 async function generateStory(
   words: StoryWordInput[],
+  genre?: string,
 ): Promise<GenerateStoryResponse> {
   const wordListText = words
     .map(
@@ -101,9 +106,15 @@ async function generateStory(
     )
     .join("\n");
 
+  const genreInstruction =
+    genre && genre.trim().length > 0
+      ? `【世界観・ジャンル指定】\nこの物語は「${genre.trim()}」のジャンル・世界観や雰囲気に合わせて作成してください。\n`
+      : "";
+
   const prompt = `
 以下の「単語リスト」に含まれるすべての単語を使用して、高校生（英語コミュニケーションⅡレベル）が楽しく読める、自然な英語のショートストーリーを作成してください。
 
+${genreInstruction}
 【要件】
 1. タイトルは親しみやすい【日本語】にしてください（例: 「朝の公園ルーティン」）。
 2. ストーリーは短編（3〜5文程度、30語程度）で、高校2年生が理解しやすい自然な英文にしてください。
@@ -133,7 +144,7 @@ ${wordListText}
  * POST ハンドラー (API Endpoint: POST /api/stories/generate)
  * フロントエンドから送信された単語リストを受け取り、Groq でショートストーリーを生成して返す
  *
- * Request: JSON { "words": [ { "meaningId": 1, "word": "run", "meaning": "走る" }, ... ] }
+ * Request: JSON { "genre": "ファンタジー", "words": [ { "meaningId": 1, "word": "run", "meaning": "走る" }, ... ] }
  * Response: JSON { "title": "朝の公園ルーティン", "story": "...", "japaneseStory": "...", "words": [...] }
  */
 export async function POST(request: Request) {
@@ -174,10 +185,16 @@ export async function POST(request: Request) {
       });
     }
 
-    // 3. Groq による物語生成処理
-    const result = await generateStory(validWords);
+    // 3. ジャンル指定の取得（任意）
+    const genre =
+      typeof body.genre === "string" && body.genre.trim().length > 0
+        ? body.genre.trim()
+        : undefined;
 
-    // 4. 成功レスポンス（200 OK）
+    // 4. Groq による物語生成処理
+    const result = await generateStory(validWords, genre);
+
+    // 5. 成功レスポンス（200 OK）
     return NextResponse.json(result);
   } catch (error: any) {
     console.error("物語生成エラー:", error);
