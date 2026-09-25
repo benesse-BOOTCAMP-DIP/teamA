@@ -33,7 +33,7 @@
   text-decoration: none;
   background-color: var(--color-base, #000000);
   border-top: 3px solid transparent;
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   color: #ffffff;
 }
 
@@ -54,23 +54,25 @@
 
 .navLabel {
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 800;
   line-height: 1.2;
   transition: color 0.2s ease;
 }
 
-/* アクティブ状態 */
+/* アクティブ状態 (選ばれた時に背景色がテーマカラーに変化) */
 .navLink.active {
+  background-color: var(--active-color);
   border-top: 3px solid var(--active-color);
-  color: var(--active-color);
+  color: #ffffff;
 }
 
 .navLink.active .navIcon {
-  background-color: var(--active-color);
+  background-color: #ffffff;
 }
 
-/* 非アクティブ状態 */
+/* 非アクティブ状態 (黒背景・白文字・白アイコン) */
 .navLink.inactive {
+  background-color: var(--color-base, #000000);
   border-top: 3px solid transparent;
   color: #ffffff;
 }
