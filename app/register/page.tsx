@@ -14,8 +14,19 @@ const DEFAULT_USER_ID = 1;
 // 入力可能な最大文字数です（仕様：45文字）
 const MAX_WORD_LENGTH = 45;
 
+// 追加可能な最大単語数です（仕様：5個）
+const MAX_WORDS = 5;
+
 // モックやバックエンドから返される「未登録」を示す固定メッセージです。
 const NOT_FOUND_TEXT = '辞書に登録されていません';
+
+const GENRE_OPTIONS = [
+  '日常',
+  'ファンタジー',
+  'SF',
+  'ミステリー',
+  '冒険',
+] as const;
 
 export default function WordRegisterPage() {
   // router は、登録完了後に別のページへ移動するための機能です。
@@ -27,6 +38,8 @@ export default function WordRegisterPage() {
   const [words, setWords] = useState<WordItem[]>([
     { id: '1', english: '', japanese: '', japaneseOptions: [] },
   ]);
+
+  const [genre, setGenre] = useState<string>('');
 
   // 画面上に表示するエラーメッセージを管理する状態です。
   const [errorMessage, setErrorMessage] = useState<string>('');
@@ -66,6 +79,10 @@ export default function WordRegisterPage() {
   // 「行を追加する」ボタンが押されたときの処理です。
   const handleAddRow = (): void => {
     if (isLoading) return;
+    if (words.length >= MAX_WORDS) {
+      setErrorMessage(`単語は最大${MAX_WORDS}個までしか追加できません。`);
+      return;
+    }
     if (errorMessage) setErrorMessage('');//一旦エラーを消して。
 
     // Date.now() は現在時刻を数字で返します。
@@ -91,6 +108,12 @@ export default function WordRegisterPage() {
 
   // 入力された英単語のバリデーション（入力チェック）を行います。
   const validateEnglishInputs = (): boolean => {
+    // 5個上限チェック：最大5個を超えている場合は弾きます
+    if (words.length > MAX_WORDS) {
+      setErrorMessage(`単語は最大${MAX_WORDS}個までしか登録できません。`);
+      return false;
+    }
+
     // 空文字チェック：1行でも空の行があれば弾きます
     const hasEmpty = words.some((w) => w.english.trim() === '');
     if (hasEmpty) {
@@ -207,6 +230,11 @@ export default function WordRegisterPage() {
 
   // 「この単語で登録する」ボタンの処理です。本番API（POST /api/words）にデータを送信します。
   const handleRegisterSubmit = async (): Promise<void> => {
+    if (!genre) {
+      setErrorMessage('物語のジャンルを選択してください。');
+      return;
+    }
+
     // 日本語訳が未選択の行がないかチェック（プルダウンを選んでいない行を防止）
     const isMissingJapanese = words.some((w) => w.japanese.trim() === '');
     if (isMissingJapanese) {
@@ -264,6 +292,7 @@ export default function WordRegisterPage() {
         throw new Error('登録された単語データを取得できませんでした');
       }
       sessionStorage.setItem('latestRegisteredWords', JSON.stringify(savedWords));
+      sessionStorage.setItem('latestStoryGenre', genre);
 
       // 登録成功時は、登録された単語の meaning_id をクエリに持たせて物語生成画面（/stories/new）へ遷移します。
       const meaningIds = savedWords
@@ -304,6 +333,26 @@ export default function WordRegisterPage() {
           単語を登録する
         </h1>
 
+        <label className="block mb-5 text-sm font-bold text-stone-700">
+          物語のジャンル
+          <select
+            value={genre}
+            onChange={(event) => {
+              setGenre(event.target.value);
+              if (errorMessage) setErrorMessage('');
+            }}
+            disabled={isLoading}
+            className="mt-2 w-full rounded-xl border border-stone-300 bg-white px-3 py-2.5 font-normal text-stone-800 outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100 disabled:bg-stone-100"
+          >
+            <option value="">ジャンルを選択してください</option>
+            {GENRE_OPTIONS.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
+        </label>
+
         {/* 単語入力行：words の数だけ WordInputRow を画面に並べます。 */}
         <div className="mb-4 max-h-[360px] overflow-y-auto pr-1">
           {words.map((item, index) => (
@@ -322,18 +371,19 @@ export default function WordRegisterPage() {
           ))}
         </div>
 
-        {/* 行追加ボタン：通信中以外はいつでも行を追加できます。 */}
+        {/* 行追加ボタン：通信中、または最大個数（5個）到達時は行を追加できないようにします。 */}
         <button
           type="button"
-          disabled={isLoading}
+          disabled={isLoading || words.length >= MAX_WORDS}
           onClick={handleAddRow}
-              className={`w-full py-2.5 mb-5 border-2 border-dashed rounded-xl font-bold flex items-center justify-center gap-1.5 text-sm transition-colors ${  isLoading
+          className={`w-full py-2.5 mb-5 border-2 border-dashed rounded-xl font-bold flex items-center justify-center gap-1.5 text-sm transition-colors ${
+            isLoading || words.length >= MAX_WORDS
               ? 'border-stone-200 text-stone-300 bg-stone-50 cursor-not-allowed'
-                : 'border-stone-300 text-stone-600 hover:bg-stone-50 hover:border-stone-400 cursor-pointer'
-            }`}
+              : 'border-stone-300 text-stone-600 hover:bg-stone-50 hover:border-stone-400 cursor-pointer'
+          }`}
         >
           <span className="text-base leading-none">＋</span>
-          <span>行を追加する</span>
+          <span>行を追加する{words.length >= MAX_WORDS ? '（最大5個）' : ''}</span>
         </button>
 
         {/* 
