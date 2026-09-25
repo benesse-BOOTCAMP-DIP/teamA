@@ -132,8 +132,14 @@ export default function StoryGeneratorPage() {
         throw new Error("登録された単語リストが空です。");
       }
 
+      const genre = sessionStorage.getItem("latestStoryGenre");
+      if (!genre) {
+        throw new Error("物語のジャンルが見つかりません。単語登録画面からやり直してください。");
+      }
+
       // 返り値: 物語生成APIが受け取る単語情報の配列
       const requestPayload = {
+        genre,
         words: registeredWords.map((w) => ({
           meaningId: Number(w.meaning_id || w.meaningId),
           word: String(w.english || w.word || "").trim(),
