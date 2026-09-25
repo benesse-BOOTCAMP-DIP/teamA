@@ -14,17 +14,25 @@ export default function StoryJapaneseViews({
 }: Props) {
   return (
     <div className="japaneseView">
-      <p className="japaneseStory">
-        {japaneseStory}
-      </p>
-
-      <div className="wordList">
-        {words.map((word) => (
-          <p key={word.meaningId} className="wordItem">
-            {word.english} / {word.japanese}
-          </p>
-        ))}
+      <div className="japaneseStoryBox">
+        <h4 className="sectionLabel">🇯🇵 日本語訳</h4>
+        <p className="japaneseStory">{japaneseStory}</p>
       </div>
+
+      {words && words.length > 0 && (
+        <div className="japaneseWordSection">
+          <h4 className="sectionLabel">📝 登場する単語</h4>
+          <div className="wordGrid">
+            {words.map((word) => (
+              <div key={word.meaningId} className="japaneseWordItem">
+                <span className="wordEnglish">{word.english}</span>
+                <span className="wordDivider">:</span>
+                <span className="wordJapanese">{word.japanese}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
