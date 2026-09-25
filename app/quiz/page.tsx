@@ -204,16 +204,6 @@ export default function QuizPage() {
       total + result.blanks.filter((blank) => blank.isCorrect).length,
     0,
   );
-  const learnedWords = quizData
-    ? Array.from(
-        new Map(
-          quizData.stories
-            .flatMap((story) => story.words)
-            .map((word) => [`${word.meaningId}-${word.wordId}`, word]),
-        ).values(),
-      )
-    : [];
-
   async function handleStartQuiz(): Promise<void> {
     setIsLoading(true);
     setErrorMessage("");
@@ -297,15 +287,19 @@ export default function QuizPage() {
   
   // この関数は、現在の物語の内容をレンダリングするために使用されます。
   // 物語の各パーツ（テキストや空欄）を順番に処理し、適切なコンポーネントを返します。
-  function renderStoryContent(): React.ReactNode {
-    return currentParts.map((part) => {
+  function renderStoryContent(
+    story: QuizStory,
+    resultBlanks: BlankResult[] = [],
+  ): React.ReactNode {
+    const storyParts = buildStoryParts(story);
+
+    return storyParts.map((part, index) => {
       if (part.type === "text") {
-        return <span key={`${part.type}-${part.value}`}>{part.value}</span>;
+        return <span key={index}>{part.value}</span>;
       }
 
-      const result = storyResults
-        .find((storyResult) => storyResult.storyId === currentStory?.storyId)
-        ?.blanks.find((blank) => blank.id === part.id);
+      const result = resultBlanks.find((blank) => blank.id === part.id);
+      const answer = result ? result.answer : answers[part.id] || "";
 
       return (
         <span
@@ -327,9 +321,9 @@ export default function QuizPage() {
                   : "border-rose-500 text-rose-700"
                 : "border-sky-500"
             }`}
-            disabled={isAnswered}
+            disabled={Boolean(result) || isAnswered}
             maxLength={MAX_ANSWER_LENGTH}
-            value={answers[part.id] || ""}
+            value={answer}
             onChange={(event) => handleAnswerChange(part.id, event.target.value)}
             placeholder="入力"
           />
@@ -421,7 +415,12 @@ export default function QuizPage() {
             )}
 
             <div className="mt-6 rounded-xl bg-sky-50 p-5 text-lg leading-10">
-              {renderStoryContent()}
+              {renderStoryContent(
+                currentStory,
+                storyResults.find(
+                  (result) => result.storyId === currentStory.storyId,
+                )?.blanks,
+              )}
             </div>
 
             <div className="mt-6 border-t border-stone-200 pt-5">
@@ -461,23 +460,35 @@ export default function QuizPage() {
             </p>
             <p className="mt-3 text-stone-600">正解しました</p>
 
-            <div className="mt-8 border-t border-stone-200 pt-6 text-left">
+            <div className="mt-8 space-y-6 border-t border-stone-200 pt-6 text-left">
               <h3 className="text-base font-bold text-stone-800">
-                今回学んだ英単語
+                今回の回答結果
               </h3>
-              <dl className="mt-3 divide-y divide-stone-200">
-                {learnedWords.map((word) => (
-                  <div
-                    key={`${word.meaningId}-${word.wordId}`}
-                    className="flex items-center justify-between gap-4 py-3"
+              {quizData?.stories.map((story, index) => {
+                const result = storyResults.find(
+                  (storyResult) => storyResult.storyId === story.storyId,
+                );
+
+                return (
+                  <article
+                    key={story.storyId}
+                    className="border-t border-stone-200 pt-5 first:border-t-0 first:pt-0"
                   >
-                    <dt className="font-bold text-stone-800">{word.word}</dt>
-                    <dd className="text-right text-sm text-stone-600">
-                      {word.meaning}
-                    </dd>
-                  </div>
-                ))}
-              </dl>
+                    <p className="text-sm font-bold text-sky-600">
+                      第 {index + 1} 話: {story.title}
+                    </p>
+                    <div className="mt-3 rounded-xl bg-sky-50 p-4 text-base leading-9">
+                      {renderStoryContent(story, result?.blanks)}
+                    </div>
+                    <p className="mt-4 text-sm font-bold text-stone-500">
+                      日本語訳
+                    </p>
+                    <p className="mt-1 leading-7 text-stone-700">
+                      {story.japaneseStory}
+                    </p>
+                  </article>
+                );
+              })}
             </div>
 
             <button
