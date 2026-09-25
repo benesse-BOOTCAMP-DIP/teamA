@@ -151,7 +151,7 @@ function getAnswerValidationError(value: string): string {
   const trimmedValue = value.trim();
 
   if (trimmedValue.length === 0) {
-    return "すべての空欄に回答してください。";
+    return "";
   }
 
   if (trimmedValue.length > MAX_ANSWER_LENGTH) {
@@ -204,6 +204,15 @@ export default function QuizPage() {
       total + result.blanks.filter((blank) => blank.isCorrect).length,
     0,
   );
+  const learnedWords = quizData
+    ? Array.from(
+        new Map(
+          quizData.stories
+            .flatMap((story) => story.words)
+            .map((word) => [`${word.meaningId}-${word.wordId}`, word]),
+        ).values(),
+      )
+    : [];
 
   async function handleStartQuiz(): Promise<void> {
     setIsLoading(true);
@@ -451,6 +460,26 @@ export default function QuizPage() {
               {totalCorrect} / {totalQuestions}
             </p>
             <p className="mt-3 text-stone-600">正解しました</p>
+
+            <div className="mt-8 border-t border-stone-200 pt-6 text-left">
+              <h3 className="text-base font-bold text-stone-800">
+                今回学んだ英単語
+              </h3>
+              <dl className="mt-3 divide-y divide-stone-200">
+                {learnedWords.map((word) => (
+                  <div
+                    key={`${word.meaningId}-${word.wordId}`}
+                    className="flex items-center justify-between gap-4 py-3"
+                  >
+                    <dt className="font-bold text-stone-800">{word.word}</dt>
+                    <dd className="text-right text-sm text-stone-600">
+                      {word.meaning}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
+
             <button
               type="button"
               onClick={() => {
