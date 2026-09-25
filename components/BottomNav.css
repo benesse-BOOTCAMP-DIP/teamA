@@ -10,9 +10,9 @@
   left: 0;
   right: 0;
   z-index: 50;
-  background-color: white;
-  border-top: 1px solid #e7e5e4;
-  box-shadow: 0 -1px 4px rgb(0 0 0 / 0.05);
+  background-color: var(--color-base, #000000);
+  border-top: 1px solid #262626;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.5);
 }
 
 .navContainer {
@@ -31,32 +31,54 @@
   align-items: center;
   justify-content: center;
   text-decoration: none;
-  background-color: var(--color-inactive-yellow);
+  background-color: var(--color-base, #000000);
+  border-top: 3px solid transparent;
+  transition: all 0.2s ease;
+  color: #ffffff;
 }
 
 .navIcon {
-  width: 20px;
-  height: 20px;
-  margin-bottom: 2px;
+  width: 22px;
+  height: 22px;
+  margin-bottom: 3px;
+  display: inline-block;
+  background-color: #ffffff;
+  mask-size: contain;
+  -webkit-mask-size: contain;
+  mask-repeat: no-repeat;
+  -webkit-mask-repeat: no-repeat;
+  mask-position: center;
+  -webkit-mask-position: center;
+  transition: background-color 0.2s ease;
 }
 
 .navLabel {
   font-size: 11px;
-  line-height: 1.2;
-}
-
-.active {
-  color: var(--color-text-main);
   font-weight: 700;
-  border-top: 2px solid #292524;
-  background-color: var(--color-primary-yellow);
+  line-height: 1.2;
+  transition: color 0.2s ease;
 }
 
-.inactive {
-  border-top: 2px solid transparent;
+/* アクティブ状態 */
+.navLink.active {
+  border-top: 3px solid var(--active-color);
+  color: var(--active-color);
 }
 
-.inactive:hover {
-  color: #44403c;
-  background-color: #fafaf9;
+.navLink.active .navIcon {
+  background-color: var(--active-color);
+}
+
+/* 非アクティブ状態 */
+.navLink.inactive {
+  border-top: 3px solid transparent;
+  color: #ffffff;
+}
+
+.navLink.inactive .navIcon {
+  background-color: #ffffff;
+}
+
+.navLink.inactive:hover {
+  opacity: 0.85;
 }
