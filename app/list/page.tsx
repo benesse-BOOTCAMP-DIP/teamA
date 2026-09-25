@@ -119,7 +119,7 @@ export default function Tabs() {
           }`}
           onClick={() => setActiveTab("story")}
         >
-          <span>物語</span>
+          <span>Stories</span>
         </button>
 
         <button
@@ -129,7 +129,7 @@ export default function Tabs() {
           }`}
           onClick={() => setActiveTab("word")}
         >
-          <span>単語</span>
+          <span>Words</span>
         </button>
       </div>
 
@@ -167,28 +167,29 @@ export default function Tabs() {
 
         {activeTab === "word" && (
           <div className={styles.wordArea}>
-            <table className={styles.wordTable}>
-              <thead>
-                <tr>
-                  <th className={`${styles.tableRow} ${styles.textCenter}`}>英語</th>
-                  <th className={`${styles.tableRow} ${styles.textCenter}`}>日本語</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredWords.map((word) => {
-                  return (         
-                    <tr key={word.word_id}>
-                      <td className={styles.textCenter}>{word.english}</td>
-                      <td className={styles.textCenter}>
-                        {word.meanings.map((meaning) => {
-                          return <p key={meaning.meaning_id}>{meaning.meaning}</p>;
-                        })}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+            <div className={styles.wordList}>
+              {isLoading ? (
+                <Loading />
+              ) : filteredWords.length === 0 ? (
+                <div className={styles.emptyWordMessage}>単語が見つかりませんでした</div>
+              ) : (
+                filteredWords.map((word) => (
+                  <div key={word.word_id} className={styles.wordCard}>
+                    <div className={styles.wordEnglish}>
+                      <span className={styles.wordDot}>•</span>
+                      <span className={styles.englishText}>{word.english}</span>
+                    </div>
+                    <div className={styles.meaningsContainer}>
+                      {word.meanings.map((meaning) => (
+                        <span key={meaning.meaning_id} className={styles.meaningTag}>
+                          {meaning.meaning}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
         )}
       </div>
