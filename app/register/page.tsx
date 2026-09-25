@@ -6,6 +6,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 // これは子コンポを読んでいる。
 import WordInputRow, { type WordItem } from '@/components/WordInputRow';
+import CameraOcrModal from '@/components/CameraOcrModal';
 
 // 登録時に使用する仮のユーザーIDです。
 // プログラム全体で使う固定値のため、大文字とアンダースコアで命名しています。
@@ -46,6 +47,24 @@ export default function WordRegisterPage() {
 
   // 通信中かどうかを管理する状態です（二重送信防止と再試行制御）。
   const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  // カメラ（OCR）モーダルの表示フラグです。
+  const [isCameraModalOpen, setIsCameraModalOpen] = useState<boolean>(false);
+
+  // カメラで検出・選択された単語を単語入力欄（words）に反映します（上限5個）。
+  const handleApplyCameraWords = (selectedWords: string[]): void => {
+    if (selectedWords.length === 0) return;
+    if (errorMessage) setErrorMessage('');
+
+    const newWords: WordItem[] = selectedWords.slice(0, MAX_WORDS).map((wordStr, index) => ({
+      id: `${Date.now()}_${index}`,
+      english: wordStr,
+      japanese: '',
+      japaneseOptions: [],
+    }));
+
+    setWords(newWords);
+  };
 
   // 英語入力が変更されたときに、対象の行だけを更新します。
   const handleEnglishChange = (id: string, value: string): void => {//ここ、Void方と等しいならって言うTSの書き方。★★★★★★★
@@ -353,6 +372,17 @@ export default function WordRegisterPage() {
           </select>
         </label>
 
+        {/* カメラ撮影・OCR読み込みボタン */}
+        <button
+          type="button"
+          disabled={isLoading}
+          onClick={() => setIsCameraModalOpen(true)}
+          className="w-full py-2.5 mb-4 bg-sky-50 border border-sky-200 hover:bg-sky-100 text-sky-700 font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-xs transition-colors cursor-pointer disabled:bg-stone-100 disabled:text-stone-400 disabled:border-stone-200"
+        >
+          <span className="text-base leading-none">📷</span>
+          <span>写真から単語を読み込む</span>
+        </button>
+
         {/* 単語入力行：words の数だけ WordInputRow を画面に並べます。 */}
         <div className="mb-4 max-h-[360px] overflow-y-auto pr-1">
           {words.map((item, index) => (
@@ -429,6 +459,13 @@ export default function WordRegisterPage() {
           </button>
         )}
       </div>
+
+      {/* カメラ（OCR）単語抽出モーダル */}
+      <CameraOcrModal
+        isOpen={isCameraModalOpen}
+        onClose={() => setIsCameraModalOpen(false)}
+        onApplyWords={handleApplyCameraWords}
+      />
     </main>
   );
 }
