@@ -54,11 +54,23 @@ export default function CameraOcrModal({
     }
   };
 
+  // 全ての状態を初期化（リセット）する処理
+  const resetAllStates = () => {
+    stopCamera();
+    setCapturedImage(null);
+    setDetectedWords([]);
+    setSelectedWords([]);
+    setOcrError('');
+    setOcrProgress(0);
+    setCameraError('');
+    setIsAnalyzing(false);
+  };
+
   useEffect(() => {
     if (isOpen && !capturedImage) {
       startCamera();
-    } else {
-      stopCamera();
+    } else if (!isOpen) {
+      resetAllStates();
     }
     return () => {
       stopCamera();
@@ -172,12 +184,13 @@ export default function CameraOcrModal({
   // 確定して親コンポーネントに選択単語を反映
   const handleApply = () => {
     onApplyWords(selectedWords);
-    stopCamera();
+    resetAllStates();
     onClose();
   };
 
+  // モーダル閉じる（✕ボタン・キャンセルボタン）
   const handleModalClose = () => {
-    stopCamera();
+    resetAllStates();
     onClose();
   };
 
@@ -211,7 +224,7 @@ export default function CameraOcrModal({
                   autoPlay
                   playsInline
                   muted
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-contain"
                 />
                 <div className="absolute inset-0 border-2 border-dashed border-sky-400/60 rounded-xl pointer-events-none flex items-center justify-center">
                   <span className="bg-stone-900/70 text-white text-[10px] px-2 py-1 rounded-md backdrop-blur-xs">
@@ -252,21 +265,24 @@ export default function CameraOcrModal({
         ) : (
           /* 解析中・検出結果選択画面 */
           <div className="flex flex-col">
-            {/* プレビュー画像 */}
-            <div className="relative w-full max-h-40 bg-stone-100 rounded-xl overflow-hidden mb-3 border border-stone-200">
+            {/* プレビュー画像（アスペクト比を維持して縦潰れ・横伸びを防止） */}
+            <div className="w-full bg-stone-900 rounded-xl overflow-hidden mb-2 border border-stone-200 flex items-center justify-center min-h-[160px] max-h-[220px]">
               <img
                 src={capturedImage}
                 alt="撮影プレビュー"
-                className="w-full h-full object-cover"
+                className="w-full h-full max-h-[220px] object-contain"
               />
-              <button
-                type="button"
-                onClick={handleRetake}
-                className="absolute top-2 right-2 bg-stone-900/70 hover:bg-stone-900 text-white text-xs px-2.5 py-1 rounded-lg backdrop-blur-xs font-bold transition-colors cursor-pointer"
-              >
-                再撮影
-              </button>
             </div>
+
+            {/* 画像のすぐ下に横長の再撮影ボタンを配置 */}
+            <button
+              type="button"
+              onClick={handleRetake}
+              className="w-full py-2.5 mb-3 bg-stone-100 hover:bg-stone-200 border border-stone-300 text-stone-700 text-xs font-bold rounded-xl transition-colors cursor-pointer flex items-center justify-center gap-1.5"
+            >
+              <span>🔄</span>
+              <span>再撮影する</span>
+            </button>
 
             {/* 解析中ローディング（進捗％表示付き） */}
             {isAnalyzing && (
