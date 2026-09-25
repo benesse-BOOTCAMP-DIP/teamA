@@ -54,11 +54,23 @@ export default function CameraOcrModal({
     }
   };
 
+  // 全ての状態を初期化（リセット）する処理
+  const resetAllStates = () => {
+    stopCamera();
+    setCapturedImage(null);
+    setDetectedWords([]);
+    setSelectedWords([]);
+    setOcrError('');
+    setOcrProgress(0);
+    setCameraError('');
+    setIsAnalyzing(false);
+  };
+
   useEffect(() => {
     if (isOpen && !capturedImage) {
       startCamera();
-    } else {
-      stopCamera();
+    } else if (!isOpen) {
+      resetAllStates();
     }
     return () => {
       stopCamera();
@@ -172,12 +184,13 @@ export default function CameraOcrModal({
   // 確定して親コンポーネントに選択単語を反映
   const handleApply = () => {
     onApplyWords(selectedWords);
-    stopCamera();
+    resetAllStates();
     onClose();
   };
 
+  // モーダル閉じる（✕ボタン・キャンセルボタン）
   const handleModalClose = () => {
-    stopCamera();
+    resetAllStates();
     onClose();
   };
 
