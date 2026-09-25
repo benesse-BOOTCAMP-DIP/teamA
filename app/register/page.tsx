@@ -421,7 +421,7 @@ export default function WordRegisterPage() {
             className={styles.cameraButton}
           >
               <div className={`radius ${styles.cameraIcon}`}>
-                <img src="/camera.png" alt="カメラ" />
+                <img src="/camera.png" alt="camera" />
               </div>
           </button>
         </div>
@@ -429,18 +429,6 @@ export default function WordRegisterPage() {
         <div className={`radius ${styles.inputCard}`}>
           <div className={styles.genreLabel}>
             {/* 物語のジャンル */}
-            {/* <select
-              value={genre}
-              onChange={(event) => {
-                setGenre(event.target.value);
-
-                if (errorMessage) {
-                  setErrorMessage("");
-                }
-              }}
-              disabled={isLoading}
-              className={`radius ${styles.genreSelect}`}
-            > */}
             <select
               value={genre}
               onChange={(event) => {
@@ -456,7 +444,7 @@ export default function WordRegisterPage() {
               }`}
             >
               <option value="">
-                ジャンルを選択してください
+                Select Genre
               </option>
 
               {GENRE_OPTIONS.map((option) => (
@@ -498,7 +486,7 @@ export default function WordRegisterPage() {
             <span>
               Add New Word
               {words.length >= MAX_WORDS &&
-                "（最大5個）"}
+                "（Max 5）"}
             </span>
           </button>
         </div>
@@ -524,8 +512,8 @@ export default function WordRegisterPage() {
             }`}
           >
             {isLoading
-              ? "翻訳を取得中..."
-              : "翻訳を取得"}
+              ? "Getting translations..."
+              : "Get Translations"}
           </button>
         ) : (
           <button
@@ -542,8 +530,8 @@ export default function WordRegisterPage() {
             }`}
           >
             {isLoading
-              ? "登録中..."
-              : "この単語で登録する"}
+              ? "Registering..."
+              : "Register These Words"}
           </button>
         )}
       </div>

@@ -37,18 +37,6 @@ const hasEnglish = item.english.trim().length > 0;
     <div className="row">
       <div className="inputArea">
         {/* 英語入力欄 */}
-        {/* <input
-          type="text"
-          maxLength={45}
-          value={item.english}
-          placeholder={`English Word ${index + 1}`}
-          onChange={(e) =>
-            onEnglishChange(item.id, e.target.value)
-          }
-          className={`englishInput ${
-            hasOptions ? "englishInputCompleted" : ""
-          }`}
-        /> */}
         <input
           type="text"
           maxLength={45}
@@ -73,7 +61,7 @@ const hasEnglish = item.english.trim().length > 0;
             }
             className="japaneseSelect"
           >
-            <option value="">訳を選択</option>
+            <option value="">Select Translation</option>
 
             {item.japaneseOptions.map((option, i) => (
               <option key={i} value={option}>
@@ -85,7 +73,7 @@ const hasEnglish = item.english.trim().length > 0;
           <input
             type="text"
             disabled
-            placeholder="英語入力後取得"
+            placeholder="English Word"
             className="disabledInput"
           />
         )}
