@@ -107,7 +107,7 @@ export default function Tabs() {
           type="text"
           value={searchWord}
           onChange={(e) => setSearchWord(e.target.value)}
-          placeholder="検索キーワードを入力してください"
+          placeholder="Search..."
         />
       </div>
       {/* 重なりファイルフォルダー風タブ切り替え */}

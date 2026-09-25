@@ -15,13 +15,11 @@ export default function StoryJapaneseViews({
   return (
     <div className="japaneseView">
       <div className="japaneseStoryBox">
-        <h4 className="sectionLabel">🇯🇵 日本語訳</h4>
-        <p className="japaneseStory">{japaneseStory}</p>
+  <p className="japaneseStory">{japaneseStory}</p>
       </div>
 
       {words && words.length > 0 && (
         <div className="japaneseWordSection">
-          <h4 className="sectionLabel">📝 登場する単語</h4>
           <div className="wordGrid">
             {words.map((word) => (
               <div key={word.meaningId} className="japaneseWordItem">

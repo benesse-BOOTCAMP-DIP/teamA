@@ -65,7 +65,7 @@ export default function StoryDetailPages() {
                   className={styles.japaneseToggle}
                   onClick={() => setIsJapaneseVisible(!isJapaneseVisible)}
                 >
-                  {isJapaneseVisible ? "和訳を隠す ▲" : "和訳を見る ▼"}
+                  {isJapaneseVisible ? "Hide Japanese translation ▲" : "View Japanese translation ▼"}
                 </button>
               </div>
 
