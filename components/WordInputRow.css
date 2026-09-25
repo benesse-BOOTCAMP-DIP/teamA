@@ -27,11 +27,30 @@
 }
 
 /* 英語入力欄 */
-.englishInput {
+/* .englishInput {
   padding: 0.625rem 0.75rem;
   background-color: white;
-  border: 1px solid #e7e5e4;
+  border: 2px solid var(--color-primary-blue);
   color: #292524;
+} */
+ .englishInput {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  background-color: white;
+  border:3px solid var(--color-primary-blue);
+  border-radius: 12px;
+  color: #292524;
+  font-size: 0.875rem;
+  border: 2px solid transparent;
+}
+
+.englishInputActive {
+  border-color: var(--color-primary-blue);
+}
+
+.englishInputCompleted {
+  border: 2px solid transparent;
 }
 
 .englishInput::placeholder {
@@ -40,19 +59,21 @@
 
 .englishInput:focus {
   outline: none;
-  border-color: #0284c7;
-  box-shadow: 0 0 0 1px #0284c7;
+  border: 2px solid var(--color-primary-blue);
 }
 
 /* 日本語選択欄 */
-.japaneseSelect {
-  padding: 0.625rem 0.625rem;
+ .japaneseSelect {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px;
   background-color: white;
-  border: 1px solid #e7e5e4;
+  border: 2px solid var(--color-primary-blue);
+  border-radius: 12px;
   color: #292524;
+  font-size: 0.875rem;
+  font-weight: 700;
   cursor: pointer;
-
-  /* 長い文字をはみ出させない */
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;

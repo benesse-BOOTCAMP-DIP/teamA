@@ -429,7 +429,7 @@ export default function WordRegisterPage() {
         <div className={`radius ${styles.inputCard}`}>
           <div className={styles.genreLabel}>
             {/* 物語のジャンル */}
-            <select
+            {/* <select
               value={genre}
               onChange={(event) => {
                 setGenre(event.target.value);
@@ -440,6 +440,20 @@ export default function WordRegisterPage() {
               }}
               disabled={isLoading}
               className={`radius ${styles.genreSelect}`}
+            > */}
+            <select
+              value={genre}
+              onChange={(event) => {
+                setGenre(event.target.value);
+
+                if (errorMessage) {
+                  setErrorMessage("");
+                }
+              }}
+              disabled={isLoading}
+              className={`radius ${styles.genreSelect} ${
+                genre === "" ? styles.activeBorder : ""
+              }`}
             >
               <option value="">
                 ジャンルを選択してください
@@ -460,6 +474,7 @@ export default function WordRegisterPage() {
                 item={item}
                 index={index}
                 canDelete={words.length > 1}
+                genreSelected={genre !== ""}
                 onEnglishChange={handleEnglishChange}
                 onJapaneseChange={handleJapaneseChange}
                 onRemoveRow={handleRemoveRow}
@@ -481,7 +496,7 @@ export default function WordRegisterPage() {
             </span>
 
             <span>
-              行を追加
+              Add New Word
               {words.length >= MAX_WORDS &&
                 "（最大5個）"}
             </span>

@@ -14,6 +14,7 @@ type WordInputRowProps = {
   item: WordItem;
   index: number;
   canDelete: boolean;
+   genreSelected: boolean;
   onEnglishChange: (id: string, value: string) => void;
   onJapaneseChange: (id: string, value: string) => void;
   onRemoveRow: (id: string) => void;
@@ -23,25 +24,44 @@ export default function WordInputRow({
   item,
   index,
   canDelete,
+  genreSelected, 
   onEnglishChange,
   onJapaneseChange,
   onRemoveRow,
 }: WordInputRowProps) {
-  const hasOptions = item.japaneseOptions.length > 0;
+
+const hasOptions = item.japaneseOptions.length > 0;
+const hasEnglish = item.english.trim().length > 0;
 
   return (
     <div className="row">
       <div className="inputArea">
         {/* 英語入力欄 */}
+        {/* <input
+          type="text"
+          maxLength={45}
+          value={item.english}
+          placeholder={`English Word ${index + 1}`}
+          onChange={(e) =>
+            onEnglishChange(item.id, e.target.value)
+          }
+          className={`englishInput ${
+            hasOptions ? "englishInputCompleted" : ""
+          }`}
+        /> */}
         <input
           type="text"
           maxLength={45}
           value={item.english}
-          placeholder={`英語 ${index + 1}`}
+          placeholder={`English Word ${index + 1}`}
           onChange={(e) =>
             onEnglishChange(item.id, e.target.value)
           }
-          className="englishInput"
+          className={`englishInput ${
+            genreSelected && !hasEnglish
+              ? "englishInputActive"
+              : ""
+          }`}
         />
 
         {/* 日本語選択欄 */}
