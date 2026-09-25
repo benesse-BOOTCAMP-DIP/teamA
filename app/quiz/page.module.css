@@ -1,63 +1,158 @@
 .page {
-  background:
-    radial-gradient(circle at 12% 8%, rgba(186, 230, 253, 0.55), transparent 30%),
-    radial-gradient(circle at 88% 22%, rgba(253, 224, 71, 0.22), transparent 26%),
-    #fafaf9;
+  background-color: var(--color-base, #000000);
+  min-height: 100vh;
+  color: #ffffff;
 }
 
-.startCard,
-.quizCard,
-.resultCard {
-  animation: cardIn 550ms cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
-.startCard {
-  border-top: 4px solid #0284c7;
-}
-
-.startButton {
+/* ========================================
+   1. フォルダ風コンテナ
+   ======================================== */
+.folderArea {
   position: relative;
-  overflow: hidden;
-  isolation: isolate;
+  background-color: var(--color-primary-orange);
+  border: 3px solid var(--color-primary-orange);
+  border-radius: 16px;
+  padding: 12px;
+  box-shadow: 0 6px 20px rgba(253, 101, 0, 0.25);
+  animation: cardIn 450ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-.startButton::after {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: -35%;
-  width: 22%;
-  background: rgba(255, 255, 255, 0.35);
-  content: "";
-  transform: skewX(-18deg);
-  transition: left 450ms ease;
-  z-index: -1;
+.folderInner {
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 20px;
+  color: #1e293b;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
-.startButton:hover::after {
-  left: 115%;
+/* ========================================
+   2. ヘッダー
+   ======================================== */
+.headerSub {
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-primary-orange);
 }
 
-.loading {
-  animation: loadingPulse 1.2s ease-in-out infinite;
+.headerTitle {
+  margin-top: 4px;
+  font-size: 1.875rem;
+  font-weight: 800;
+  color: #ffffff;
 }
 
+/* ========================================
+   3. ボタン
+   ======================================== */
+.primaryButton {
+  width: 100%;
+  background-color: var(--color-primary-orange);
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 1rem;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 14px rgba(253, 101, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.primaryButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(253, 101, 0, 0.55);
+  filter: brightness(1.05);
+}
+
+.secondaryButton {
+  width: 100%;
+  background-color: #ffffff;
+  color: #334155;
+  font-weight: 800;
+  font-size: 0.95rem;
+  padding: 13px 16px;
+  border-radius: 12px;
+  border: 2px solid #cbd5e1;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.secondaryButton:hover {
+  background-color: #f8fafc;
+  border-color: var(--color-primary-orange);
+  color: var(--color-primary-orange);
+  transform: translateY(-1px);
+}
+
+/* ========================================
+   4. プログレスバー
+   ======================================== */
 .progressTrack {
-  height: 6px;
+  height: 8px;
   overflow: hidden;
   border-radius: 999px;
-  background: #e7e5e4;
+  background: #fed7aa;
 }
 
 .progressBar {
   height: 100%;
   border-radius: inherit;
-  background: #0284c7;
+  background: var(--color-primary-orange);
   transition: width 450ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.quizCard {
-  border-top: 4px solid #0ea5e9;
+/* ========================================
+   5. 物語テキスト・回答エリア
+   ======================================== */
+.storyBox {
+  margin-top: 20px;
+  border-radius: 12px;
+  background-color: #fff7ed;
+  border: 2px solid #ffedd5;
+  padding: 20px;
+  font-size: 1.1rem;
+  line-height: 2.3;
+  color: #1e293b;
+}
+
+/* 空欄インプット */
+.blankInput {
+  min-width: 96px;
+  border: none;
+  border-bottom: 2.5px solid var(--color-primary-orange);
+  background-color: #ffffff;
+  padding: 4px 8px;
+  text-align: center;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #0f172a;
+  outline: none;
+  border-radius: 6px 6px 0 0;
+  transition: all 0.2s ease;
+}
+
+.blankInput:focus {
+  border-bottom-color: var(--color-primary-yellow);
+  box-shadow: 0 3px 10px rgba(253, 101, 0, 0.25);
+}
+
+.blankInputCorrect {
+  border-bottom: 2.5px solid var(--color-primary-green, #00F800) !important;
+  color: #047857 !important;
+  background-color: #ecfdf5 !important;
+  font-weight: 800 !important;
+}
+
+.blankInputWrong {
+  border-bottom: 2.5px solid var(--color-primary-pink, #FE07DA) !important;
+  color: #be185d !important;
+  background-color: #fdf2f8 !important;
+  font-weight: 800 !important;
 }
 
 .correctBlank {
@@ -70,46 +165,125 @@
 
 .feedback {
   animation: feedbackIn 300ms ease-out both;
+  margin-top: 4px;
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 800;
 }
 
-.resultCard {
-  position: relative;
-  overflow: hidden;
-  border-top: 4px solid #f59e0b;
+.feedbackCorrect {
+  color: #047857;
 }
 
-.resultCard::before,
-.resultCard::after {
-  position: absolute;
-  width: 9px;
-  height: 28px;
-  border-radius: 3px;
-  content: "";
+.feedbackWrong {
+  color: #be185d;
+}
+
+/* ========================================
+   6. セクションブロック (日本語訳 / ヒント)
+   ======================================== */
+.sectionBlock {
+  margin-top: 20px;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 16px;
+}
+
+.sectionLabel {
+  font-size: 0.875rem;
+  font-weight: 800;
+  color: var(--color-primary-orange);
+}
+
+.hintToggleButton {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 800;
+  color: var(--color-primary-orange);
+  transition: opacity 0.2s ease;
+}
+
+.hintToggleButton:hover {
   opacity: 0.8;
-  animation: confettiDrop 1.8s ease-in-out infinite;
 }
 
-.resultCard::before {
-  top: 16px;
-  left: 18%;
-  background: #38bdf8;
-  transform: rotate(-24deg);
+.sectionText {
+  margin-top: 8px;
+  line-height: 1.7;
+  color: #334155;
+  font-size: 0.95rem;
 }
 
-.resultCard::after {
-  top: 40px;
-  right: 18%;
-  background: #fbbf24;
-  transform: rotate(25deg);
-  animation-delay: 180ms;
-}
-
-.score {
+/* ========================================
+   7. スコア & 結果表示
+   ======================================== */
+.scoreText {
   animation: scoreReveal 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
-  color: #0369a1;
+  color: var(--color-primary-orange);
+  font-size: 3.5rem;
+  font-weight: 900;
   font-variant-numeric: tabular-nums;
+  margin-top: 12px;
 }
 
+.resultBadge {
+  color: var(--color-primary-orange);
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+}
+
+.storyResultCard {
+  border-top: 1px solid #e2e8f0;
+  padding-top: 20px;
+  margin-top: 20px;
+}
+
+.storyResultCard:first-child {
+  border-top: none;
+  padding-top: 0;
+  margin-top: 0;
+}
+
+/* ========================================
+   8. ローディング & エラー
+   ======================================== */
+.loadingBox {
+  background-color: var(--color-primary-orange);
+  border: 3px solid var(--color-primary-orange);
+  border-radius: 16px;
+  padding: 12px;
+  animation: loadingPulse 1.2s ease-in-out infinite;
+}
+
+.loadingInner {
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 28px;
+  text-align: center;
+  color: #1e293b;
+  font-weight: 800;
+}
+
+.errorBox {
+  margin-top: 16px;
+  border-radius: 12px;
+  border: 2px solid var(--color-primary-pink);
+  background-color: #fdf2f8;
+  padding: 16px;
+  color: #be185d;
+  font-weight: 700;
+}
+
+/* ========================================
+   9. アニメーション
+   ======================================== */
 @keyframes cardIn {
   from {
     opacity: 0;
@@ -122,9 +296,8 @@
 }
 
 @keyframes loadingPulse {
-  0%,
-  100% {
-    opacity: 0.55;
+  0%, 100% {
+    opacity: 0.7;
   }
   50% {
     opacity: 1;
@@ -144,8 +317,7 @@
 }
 
 @keyframes wrongShake {
-  0%,
-  100% {
+  0%, 100% {
     transform: translateX(0);
   }
   25% {
@@ -178,29 +350,13 @@
   }
 }
 
-@keyframes confettiDrop {
-  0%,
-  100% {
-    opacity: 0.35;
-    transform: translateY(0) rotate(20deg);
-  }
-  50% {
-    opacity: 0.95;
-    transform: translateY(16px) rotate(160deg);
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .startCard,
-  .quizCard,
-  .resultCard,
-  .loading,
+  .folderArea,
+  .loadingBox,
   .correctBlank,
   .wrongBlank,
   .feedback,
-  .score,
-  .resultCard::before,
-  .resultCard::after {
+  .scoreText {
     animation: none;
   }
 
