@@ -14,6 +14,9 @@ const DEFAULT_USER_ID = 1;
 // 入力可能な最大文字数です（仕様：45文字）
 const MAX_WORD_LENGTH = 45;
 
+// 追加可能な最大単語数です（仕様：5個）
+const MAX_WORDS = 5;
+
 // モックやバックエンドから返される「未登録」を示す固定メッセージです。
 const NOT_FOUND_TEXT = '辞書に登録されていません';
 
@@ -76,6 +79,10 @@ export default function WordRegisterPage() {
   // 「行を追加する」ボタンが押されたときの処理です。
   const handleAddRow = (): void => {
     if (isLoading) return;
+    if (words.length >= MAX_WORDS) {
+      setErrorMessage(`単語は最大${MAX_WORDS}個までしか追加できません。`);
+      return;
+    }
     if (errorMessage) setErrorMessage('');//一旦エラーを消して。
 
     // Date.now() は現在時刻を数字で返します。
@@ -101,6 +108,12 @@ export default function WordRegisterPage() {
 
   // 入力された英単語のバリデーション（入力チェック）を行います。
   const validateEnglishInputs = (): boolean => {
+    // 5個上限チェック：最大5個を超えている場合は弾きます
+    if (words.length > MAX_WORDS) {
+      setErrorMessage(`単語は最大${MAX_WORDS}個までしか登録できません。`);
+      return false;
+    }
+
     // 空文字チェック：1行でも空の行があれば弾きます
     const hasEmpty = words.some((w) => w.english.trim() === '');
     if (hasEmpty) {
@@ -358,18 +371,19 @@ export default function WordRegisterPage() {
           ))}
         </div>
 
-        {/* 行追加ボタン：通信中以外はいつでも行を追加できます。 */}
+        {/* 行追加ボタン：通信中、または最大個数（5個）到達時は行を追加できないようにします。 */}
         <button
           type="button"
-          disabled={isLoading}
+          disabled={isLoading || words.length >= MAX_WORDS}
           onClick={handleAddRow}
-              className={`w-full py-2.5 mb-5 border-2 border-dashed rounded-xl font-bold flex items-center justify-center gap-1.5 text-sm transition-colors ${  isLoading
+          className={`w-full py-2.5 mb-5 border-2 border-dashed rounded-xl font-bold flex items-center justify-center gap-1.5 text-sm transition-colors ${
+            isLoading || words.length >= MAX_WORDS
               ? 'border-stone-200 text-stone-300 bg-stone-50 cursor-not-allowed'
-                : 'border-stone-300 text-stone-600 hover:bg-stone-50 hover:border-stone-400 cursor-pointer'
-            }`}
+              : 'border-stone-300 text-stone-600 hover:bg-stone-50 hover:border-stone-400 cursor-pointer'
+          }`}
         >
           <span className="text-base leading-none">＋</span>
-          <span>行を追加する</span>
+          <span>行を追加する{words.length >= MAX_WORDS ? '（最大5個）' : ''}</span>
         </button>
 
         {/* 
