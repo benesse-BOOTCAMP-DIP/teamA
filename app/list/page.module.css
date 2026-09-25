@@ -1,38 +1,3 @@
-:root {
-  /* 1. ベースカラー */
-  --color-bg-base: #fafaf9;
-  --color-bg-surface: #ffffff;
-
-  /* 2. メインカラー */
-  --color-primary: #0284c7;
-  --color-primary-hover: #0369a1;
-  --color-primary-text: #ffffff;
-
-  /* 3. アクセント / ハイライト */
-  --color-highlight-bg: #fef3c7;
-  --color-highlight-border: #f59e0b;
-  --color-highlight-text: #1c1917;
-
-  /* 4. 基本テキスト・枠線 */
-  --color-text-main: #292524;
-  --color-text-sub: #78716c;
-  --color-border: #e7e5e4;
-}
-
-
-/* ========================================
-   1. コンテナ・全体レイアウト
-   ======================================== */
-:global(.container) {
-  max-width: 393px;
-  min-height: 100vh;
-  margin: 0 auto;
-  padding: 32px 16px;
-  background-color: var(--color-bg-base);
-  color: var(--color-text-main);
-  box-sizing: border-box;
-}
-
 .boxCenter {
   display: flex;
   justify-content: center;
@@ -43,9 +8,11 @@
    キーワード検索
    ======================================== */
 .searchInput{
-  background-color: var(--color-bg-surface);
-  width: 80%;
-  margin: 20px;
+  background-color:white;
+  width: 100%;
+  height: 35px;
+  margin: 8px;
+  border-radius: 8px;
 }
 
 /* ========================================
@@ -53,31 +20,27 @@
    ======================================== */
 .tabs {
   display: flex;
+  justify-content: space-between;
+  padding: 16px 8px 6px 8px;
 }
 
 .tab {
-  flex: 1;
   padding: 10px 16px;
   font-size: 0.875rem;
   font-weight: 700;
-  color: var(--color-text-sub);
-  background-color: var(--color-bg-surface);
+  color: var(--color-text-main);
+  background-color: var(--color-primary-blue);
   border: 1px solid var(--color-border);
   border-bottom:1px solid var(--color-primary);
-   clip-path: polygon(
-    8% 0,
-    92% 0,
-    100% 100%,
-    0 100%
-  );
   cursor: pointer;
   transition: all 0.15s ease-in-out;
   box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  width: 49%;
 }
 
 .tab.active {
-  background-color: var(--color-primary);
-  color: var(--color-primary-text);
+  background-color: var(--color-primary-pink);
+  color: var(--color-text-main);
   border-color: var(--color-primary);
 }
 
@@ -85,23 +48,13 @@
    3. 物語
    ======================================== */
 .story{
-  border: 1px solid var(--color-border);
   box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  background-color: var(--color-bg-surface);
-  padding: 0 16px;
+  background-color: white;
+  margin: 0 8px;
   /* 単語タブのテーブル高さと統一 thead 50px + tbody 630px*/
   max-height: 680px;
   overflow-y: auto;
-}
-
-/* ローディング */
-.loding{
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  /* 単語タブのテーブル高さと統一 thead 50px + tbody 630px*/
-  height: 680px;
-  font-size: large;
+  border: 3px solid var(--color-primary-pink);
 }
 
 .title{
@@ -112,18 +65,19 @@
 }
 
 .contentDisplay {
-  margin: 8px 0;
+  margin: 8px;
+  border: 1px solid var(--color-primary-purple);
 }
 
 .titleLink{
-  color: var(--color-primary);
+  color: var(--color-text-main);
   font-weight: 800;
 }
 
 
 .storyText {
   font-size: 0.875rem;
-  color: var(--color-text-sub);
+  color: var(--color-text-main);
   line-height: 1.4;
   display: -webkit-box;
   -webkit-box-orient: vertical;
@@ -153,26 +107,24 @@
   border-radius: 1rem;
   padding: 1rem;
   box-shadow: 0 2px 2px 0 rgb(0 0 0 / 0.05);
-  border: 1px solid var(--color-primary-hover);
+  /* border: 1px solid var(--color-primary-hover); */
 }
 /* ========================================
    4. 単語テーブル
    ======================================== */
+
 .wordTable {
-  width: 100%;
-  table-layout: fixed;
   border-collapse: separate;
   border-spacing: 0;
-  background-color: var(--color-bg-surface);
+  border: 3px solid var(--color-primary-pink);
+  border-radius: 8px;
+  margin: 0 8px;
   overflow: hidden;
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  border: 1px solid var(--color-border);
-  border-collapse: collapse;
 }
 
 .wordTable th {
-  background-color: var(--color-bg-base);
-  color: var(--color-text-sub);
+  background-color: white;
+  color: var(--color-text-main);
   font-weight: 700;
   font-size: 0.875rem;
   padding: 12px 16px;
@@ -230,11 +182,13 @@
   table-layout: fixed;
 }
 
+
 .wordTable tbody {
   display: block;
   max-height: 630px;
   overflow-y: auto;
   width: 100%;
+  background-color: white;
 }
 
 .wordTable tbody tr {

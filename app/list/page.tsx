@@ -3,7 +3,9 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import type { WordsListResponse } from "@/app/api/words/route";
+import "../globals.css";
 import styles from "./page.module.css";
+import Loading from "@/components/Loading";
 
 type Tab = "story" | "word";
 
@@ -96,9 +98,9 @@ export default function Tabs() {
   
   return (
     <div className="container">
-      <Link href="/register">
+      {/* <Link href="/register">
         <p>物語登録画面へ</p>
-      </Link>
+      </Link> */}
       <div className={styles.boxCenter}>
         <input
           className={styles.searchInput}
@@ -109,13 +111,13 @@ export default function Tabs() {
         />
       </div>
       <div className={`${styles.tabs} ${styles.boxCenter}`}>
-        <button  className={`${styles.tab} ${
+        <button  className={`radius ${styles.tab} ${
       activeTab === "story" ? styles.active : ""
     }`} onClick={() => setActiveTab("story")}>
           物語
         </button>
 
-        <button className={`${styles.tab} ${
+        <button className={`radius ${styles.tab} ${
       activeTab === "word" ? styles.active : ""
     }`} onClick={() => setActiveTab("word")}>
           単語
@@ -125,11 +127,9 @@ export default function Tabs() {
   
       <div>
         {activeTab === "story" && (
-          <div className={styles.story}>
+          <div className={`radius ${styles.story}`}>
              {isLoading ? (
-              <div className={styles.loding}>
-                <p>読み込み中...</p>
-              </div>
+              <Loading />
             ) : (
             filteredStories.map((story) => (
               <div key={story.id}className={`${styles.contentDisplay} ${styles.storyContainer}`} >
@@ -159,7 +159,7 @@ export default function Tabs() {
 
         {activeTab === "word" && (
           <div className={styles.boxCenter}>
-            <table className={styles.wordTable}>
+            <table className={`radius ${styles.wordTable}`}>
               <thead>
                 <tr>
                   <th className={`${styles.tableRow} ${styles.textCenter}`}>英語</th>
