@@ -159,6 +159,12 @@ export async function POST(request: Request) {
         { status: 400 },
       );
     }
+    if (body.words.length > 5) {
+      return NextResponse.json(
+        { error: "一度に物語を生成できる単語は最大5個までです" },
+        { status: 400 },
+      );
+    }
 
     // 2. 各単語のバリデーションチェック（meaningId, word, meaning の存在確認）
     const validWords: StoryWordInput[] = [];
