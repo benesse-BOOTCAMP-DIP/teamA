@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import "../globals.css";
 import styles from "./page.module.css";
 
 type QuizWord = {
@@ -34,11 +35,11 @@ type RandomQuizResponse = {
 type StoryPart =
   | { type: "text"; value: string }
   | {
-      type: "blank";
-      id: string;
-      value: string;
-      word: QuizWord;
-    };
+    type: "blank";
+    id: string;
+    value: string;
+    word: QuizWord;
+  };
 
 type BlankResult = {
   id: string;
@@ -56,7 +57,7 @@ const QUIZ_API_URL = "/api/quiz/random";
 const USER_ID = 1;
 const QUIZ_LIMIT = 3;
 const MAX_ANSWER_LENGTH = 45;
-const ENGLISH_ANSWER_PATTERN = /^[a-zA-Z\s\-']+$/;
+const ENGLISH_ANSWER_PATTERN = /^[a-zA-Z\s\-\u2010-\u2015\u2212'’‘`′]+$/;
 
 /**
  * 正規表現の特殊文字をエスケープする関数
@@ -79,7 +80,7 @@ function buildStoryParts(story: QuizStory): StoryPart[] {
   story.words.forEach((word) => {
     const surfaces = word.surfaces.length > 0 ? word.surfaces : [word.word];
     surfaces.forEach((surface) => {
-      surfaceMap.set(surface.toLowerCase(), word);
+      surfaceMap.set(normalizeAnswer(surface), word);
     });
   });
 
@@ -91,7 +92,7 @@ function buildStoryParts(story: QuizStory): StoryPart[] {
     return [{ type: "text", value: story.story }];
   }
 
-  const matcher = new RegExp(`\\b(${surfaces.map(escapeRegExp).join("|")})\\b`, "gi");
+  const matcher = new RegExp(`(?:(?<=\\s|^|[^a-zA-Z0-9'’\\-]))(${surfaces.map(escapeRegExp).join("|")})(?=(?:\\s|$|[^a-zA-Z0-9'’\\-]))`, "gi");
   const parts: StoryPart[] = [];
   let lastIndex = 0;
   let blankNumber = 0;
@@ -105,7 +106,7 @@ function buildStoryParts(story: QuizStory): StoryPart[] {
       });
     }
 
-    const matchedSurface = match[0].toLowerCase();
+    const matchedSurface = normalizeAnswer(match[0]);
     const word = surfaceMap.get(matchedSurface);
     if (!word) {
       parts.push({ type: "text", value: match[0] });
@@ -135,16 +136,31 @@ function buildStoryParts(story: QuizStory): StoryPart[] {
  * @returns 正規化された文字列
  */
 
-// 1. 引数の文字列をトリムして、先頭と末尾の空白を削除する
-// 2. トリムした文字列を小文字に変換する
-// 3. 変換した文字列を返す
-
 function normalizeAnswer(value: string): string {
-  return value.trim().toLowerCase();
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[’‘`′]/g, "'")
+    .replace(/[\u2010-\u2015\u2212]/g, "-");
 }
 
 function getAcceptedAnswers(word: QuizWord): string[] {
   return Array.from(new Set([word.word, ...word.surfaces]));
+}
+
+function getResultMessage(totalCorrect: number, totalQuestions: number): string {
+  if (totalQuestions === 0) return "Great Job!";
+  const percentage = (totalCorrect / totalQuestions) * 100;
+  if (percentage === 100) {
+    return "Perfect!";
+  }
+  if (percentage >= 80) {
+    return "Great Job!";
+  }
+  if (percentage >= 50) {
+    return "Good Effort!";
+  }
+  return "Keep Practicing!";
 }
 
 function getAnswerValidationError(value: string): string {
@@ -155,23 +171,16 @@ function getAnswerValidationError(value: string): string {
   }
 
   if (trimmedValue.length > MAX_ANSWER_LENGTH) {
-    return `回答は${MAX_ANSWER_LENGTH}文字以内で入力してください。`;
+    return `Answer must be within ${MAX_ANSWER_LENGTH} characters.`;
   }
 
   if (!ENGLISH_ANSWER_PATTERN.test(trimmedValue)) {
-    return "回答は半角英字のみで入力してください。";
+    return "Please enter your answer in English letters only.";
   }
 
   return "";
 }
 
-
-
-// この関数 `normalizeAnswer` は、与えられた文字列を正規化するための関数です。正規化とは、文字列を比較しやすい形に変換することを指します。この関数では、以下の3つのステップで文字列を処理しています。
-
-// 1. **トリム**: 引数として渡された文字列の先頭と末尾の空白を削除します。これにより、余分な空白が答えの比較に影響を与えないようにします。 
-// 2. **小文字変換**: トリムした文字列を小文字に変換します。これにより、大文字と小文字の違いによる比較の誤りを防ぎます。
-// 3. **返却**: 変換した文字列を返します。
 function isCorrectAnswer(answer: string, word: QuizWord): boolean {
   const normalizedAnswer = normalizeAnswer(answer);
   return getAcceptedAnswers(word).some(
@@ -188,6 +197,7 @@ export default function QuizPage() {
   const [isFinished, setIsFinished] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [showHint, setShowHint] = useState(false);
 
   const currentStory = quizData?.stories[currentStoryIndex];
   const currentParts = currentStory ? buildStoryParts(currentStory) : [];
@@ -215,7 +225,7 @@ export default function QuizPage() {
       const data: RandomQuizResponse = await response.json().catch(() => ({}));
 
       if (!response.ok || !data.success || !data.data?.stories.length) {
-        throw new Error(data.error || "クイズデータの取得に失敗しました。");
+        throw new Error(data.error || "Failed to load quiz data.");
       }
 
       setQuizData(data.data);
@@ -224,11 +234,12 @@ export default function QuizPage() {
       setStoryResults([]);
       setIsAnswered(false);
       setIsFinished(false);
+      setShowHint(false);
     } catch (error: unknown) {
       setErrorMessage(
         error instanceof Error
           ? error.message
-          : "クイズデータの取得に失敗しました。",
+          : "Failed to load quiz data.",
       );
     } finally {
       setIsLoading(false);
@@ -279,12 +290,13 @@ export default function QuizPage() {
     setCurrentStoryIndex((previousIndex) => previousIndex + 1);
     setAnswers({});
     setIsAnswered(false);
+    setShowHint(false);
     setErrorMessage("");
   }
 
 
 
-  
+
   // この関数は、現在の物語の内容をレンダリングするために使用されます。
   // 物語の各パーツ（テキストや空欄）を順番に処理し、適切なコンポーネントを返します。
   function renderStoryContent(
@@ -304,38 +316,35 @@ export default function QuizPage() {
       return (
         <span
           key={part.id}
-          className={`inline-flex flex-col align-middle mx-1 ${
-            result
+          className={`inline-flex flex-col align-middle mx-1 ${result
               ? result.isCorrect
                 ? styles.correctBlank
                 : styles.wrongBlank
               : ""
-          }`}
+            }`}
         >
           <input
-            aria-label={`${part.word.meaning}の回答`}
-            className={`min-w-24 border-b-2 bg-white px-2 py-1 text-center text-base outline-none ${
-              result
+            aria-label={`Answer for ${part.word.meaning}`}
+            className={`${styles.blankInput} ${result
                 ? result.isCorrect
-                  ? "border-emerald-500 text-emerald-700"
-                  : "border-rose-500 text-rose-700"
-                : "border-sky-500"
-            }`}
+                  ? styles.blankInputCorrect
+                  : styles.blankInputWrong
+                : ""
+              }`}
             disabled={Boolean(result) || isAnswered}
             maxLength={MAX_ANSWER_LENGTH}
             value={answer}
             onChange={(event) => handleAnswerChange(part.id, event.target.value)}
-            placeholder="入力"
+            placeholder="Type..."
           />
           {result && (
             <span
-              className={`${styles.feedback} mt-1 text-center text-xs font-bold ${
-                result.isCorrect ? "text-emerald-600" : "text-rose-600"
-              }`}
+              className={`${styles.feedback} ${result.isCorrect ? styles.feedbackCorrect : styles.feedbackWrong
+                }`}
             >
               {result.isCorrect
-                ? "正解"
-                : `正解: ${getAcceptedAnswers(result.word).join(" / ")}`}
+                ? "Correct!"
+                : `Answer: ${getAcceptedAnswers(result.word).join(" / ")}`}
             </span>
           )}
         </span>
@@ -344,169 +353,199 @@ export default function QuizPage() {
   }
 
   return (
-    <main className={`${styles.page} min-h-screen px-4 py-8 text-stone-800`}>
-      <div className="mx-auto w-full max-w-[393px]">
-        <header className="mb-8">
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-sky-600">
-            English Story Quiz
-          </p>
-          <h1 className="mt-2 text-3xl font-bold">物語クイズ</h1>
-        </header>
+    <div className="container">
+      <div className={styles.page}>
+        {!quizData && (
+          <header className="mb-6">
+            <p className={styles.headerSub}>
+              English Story Quiz
+            </p>
+            <h1 className={styles.headerTitle}>Story Quiz</h1>
+          </header>
+        )}
 
         {!quizData && !isLoading && (
-          <section className={`${styles.startCard} rounded-2xl border border-stone-200 bg-white p-6 shadow-sm`}>
-            <h2 className="text-xl font-bold">保存した物語で学習する</h2>
-            <p className="mt-3 leading-7 text-stone-600">
-              英文の空欄を入力して、物語の中で覚えた単語を確認します。
-            </p>
-            <button
-              type="button"
-              onClick={handleStartQuiz}
-              className={`${styles.startButton} mt-6 w-full rounded-xl bg-sky-600 px-4 py-3 font-bold text-white transition hover:bg-sky-700`}
-            >
-              クイズを開始
-            </button>
+          <section className={styles.folderArea}>
+            <div className={styles.folderInner}>
+              <h2 className="text-xl font-extrabold text-slate-900">
+                Learn with Saved Stories
+              </h2>
+              <p className="mt-3 text-sm leading-6 text-slate-600 font-medium">
+                Fill in the blanks in the story to test your vocabulary.
+              </p>
+              <button
+                type="button"
+                onClick={handleStartQuiz}
+                className={`${styles.primaryButton} mt-6`}
+              >
+                Start Quiz
+              </button>
+              {errorMessage && (
+                <div className={styles.errorBox}>
+                  {errorMessage}
+                </div>
+              )}
+            </div>
           </section>
         )}
 
         {isLoading && (
-          <p className={`${styles.loading} rounded-xl bg-white p-6 text-center text-stone-600`}>
-            クイズを準備しています...
-          </p>
-        )}
-
-        {errorMessage && (
-          <p className="mt-4 rounded-xl border border-rose-200 bg-rose-50 p-4 text-rose-700">
-            {errorMessage}
-          </p>
+          <div className={styles.loadingBox}>
+            <div className={styles.loadingInner}>
+              Preparing quiz...
+            </div>
+          </div>
         )}
 
         {quizData && !isFinished && currentStory && (
-          <section className={`${styles.quizCard} rounded-2xl border border-stone-200 bg-white p-6 shadow-sm`}>
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <p className="text-sm font-bold text-sky-600">
-                  第 {currentStoryIndex + 1} 話 / {quizData.totalStories} 話
+          <section className={styles.folderArea}>
+            <div className={styles.folderInner}>
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-xs font-bold" style={{ color: "var(--color-primary-orange)" }}>
+                    Story {currentStoryIndex + 1} of {quizData.totalStories}
+                  </p>
+                  <h2 className="mt-1 text-lg font-bold text-slate-900">
+                    {currentStory.title}
+                  </h2>
+                </div>
+                <p className="text-xs font-bold text-slate-500">
+                  Score: {totalCorrect} / {totalQuestions}
                 </p>
-                <h2 className="mt-1 text-xl font-bold">{currentStory.title}</h2>
               </div>
-              <p className="text-sm text-stone-500">
-                正解 {totalCorrect} / {totalQuestions}
-              </p>
-            </div>
 
-            <div className="mt-5">
-              <div className={styles.progressTrack}>
-                <div
-                  className={styles.progressBar}
-                  style={{
-                    width: `${((currentStoryIndex + 1) / quizData.totalStories) * 100}%`,
-                  }}
+              <div className="mt-4">
+                <div className={styles.progressTrack}>
+                  <div
+                    className={styles.progressBar}
+                    style={{
+                      width: `${((currentStoryIndex + 1) / quizData.totalStories) * 100}%`,
+                    }}
+                  />
+                </div>
+              </div>
+
+              {currentStory.imageUrl && (
+                <img
+                  src={currentStory.imageUrl}
+                  alt="Story Illustration"
+                  className="mt-5 max-h-52 w-full rounded-xl object-cover border border-slate-100 shadow-sm"
                 />
+              )}
+
+              <div className={styles.storyBox}>
+                {renderStoryContent(
+                  currentStory,
+                  storyResults.find(
+                    (result) => result.storyId === currentStory.storyId,
+                  )?.blanks,
+                )}
               </div>
-            </div>
 
-            {currentStory.imageUrl && (
-              <img
-                src={currentStory.imageUrl}
-                alt="物語の挿絵"
-                className="mt-6 max-h-56 w-full rounded-xl object-cover"
-              />
-            )}
+              <div className={styles.sectionBlock}>
+                <p className={styles.sectionLabel}>Japanese Translation</p>
+                <p className={styles.sectionText}>{currentStory.japaneseStory}</p>
+              </div>
 
-            <div className="mt-6 rounded-xl bg-sky-50 p-5 text-lg leading-10">
-              {renderStoryContent(
-                currentStory,
-                storyResults.find(
-                  (result) => result.storyId === currentStory.storyId,
-                )?.blanks,
+              {currentStory.words.length > 0 && (
+                <div className={styles.sectionBlock}>
+                  <button
+                    type="button"
+                    onClick={() => setShowHint((prev) => !prev)}
+                    className={styles.hintToggleButton}
+                  >
+                    <span>Hint</span>
+                    <span>{showHint ? "Hide ▲" : "Show ▼"}</span>
+                  </button>
+                  {showHint && (
+                    <p className={styles.sectionText}>
+                      Word Meanings: {currentStory.words.map((word) => word.meaning).join(" / ")}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              <button
+                type="button"
+                onClick={isAnswered ? handleNextStory : handleSubmitStory}
+                className={`${styles.primaryButton} mt-6`}
+              >
+                {isAnswered
+                  ? currentStoryIndex === quizData.stories.length - 1
+                    ? "View Results"
+                    : "Next Story"
+                  : "Submit Answer"}
+              </button>
+              {errorMessage && (
+                <div className={styles.errorBox}>
+                  {errorMessage}
+                </div>
               )}
             </div>
-
-            <div className="mt-6 border-t border-stone-200 pt-5">
-              <p className="text-sm font-bold text-stone-500">日本語訳</p>
-              <p className="mt-2 leading-7">{currentStory.japaneseStory}</p>
-            </div>
-
-            {currentStory.words.length > 0 && (
-              <div className="mt-6 border-t border-stone-200 pt-5">
-                <p className="text-sm font-bold text-stone-500">ヒント</p>
-                <p className="mt-2 text-sm text-stone-600">
-                  空欄の意味: {currentStory.words.map((word) => word.meaning).join(" / ")}
-                </p>
-              </div>
-            )}
-
-            <button
-              type="button"
-              onClick={isAnswered ? handleNextStory : handleSubmitStory}
-              className="mt-6 w-full rounded-xl bg-stone-800 px-4 py-3 font-bold text-white transition hover:bg-stone-900"
-            >
-              {isAnswered
-                ? currentStoryIndex === quizData.stories.length - 1
-                  ? "結果を見る"
-                  : "次の物語へ"
-                : "回答する"}
-            </button>
           </section>
         )}
 
         {isFinished && (
-          <section className={`${styles.resultCard} rounded-2xl border border-stone-200 bg-white p-8 text-center shadow-sm`}>
-            <p className="text-sm font-bold text-sky-600">QUIZ COMPLETE</p>
-            <h2 className="mt-2 text-2xl font-bold">おつかれさまでした</h2>
-            <p className={`${styles.score} mt-5 text-4xl font-bold`}>
-              {totalCorrect} / {totalQuestions}
-            </p>
-            <p className="mt-3 text-stone-600">正解しました</p>
+          <section className={styles.folderArea}>
+            <div className={`${styles.folderInner} text-center`}>
+              <p className={styles.resultBadge}>QUIZ COMPLETE</p>
+              <h2 className="mt-2 text-2xl font-extrabold text-slate-900">
+                {getResultMessage(totalCorrect, totalQuestions)}
+              </h2>
+              <p className={styles.scoreText}>
+                {totalCorrect} / {totalQuestions}
+              </p>
+              <p className="mt-1 text-sm font-bold text-slate-600">Correct Answers</p>
 
-            <div className="mt-8 space-y-6 border-t border-stone-200 pt-6 text-left">
-              <h3 className="text-base font-bold text-stone-800">
-                今回の回答結果
-              </h3>
-              {quizData?.stories.map((story, index) => {
-                const result = storyResults.find(
-                  (storyResult) => storyResult.storyId === story.storyId,
-                );
+              <button
+                type="button"
+                onClick={() => {
+                  setQuizData(null);
+                  setIsFinished(false);
+                  setStoryResults([]);
+                  setAnswers({});
+                  setIsAnswered(false);
+                  setShowHint(false);
+                }}
+                className={`${styles.secondaryButton} mt-6`}
+              >
+                Try Again
+              </button>
 
-                return (
-                  <article
-                    key={story.storyId}
-                    className="border-t border-stone-200 pt-5 first:border-t-0 first:pt-0"
-                  >
-                    <p className="text-sm font-bold text-sky-600">
-                      第 {index + 1} 話: {story.title}
-                    </p>
-                    <div className="mt-3 rounded-xl bg-sky-50 p-4 text-base leading-9">
-                      {renderStoryContent(story, result?.blanks)}
-                    </div>
-                    <p className="mt-4 text-sm font-bold text-stone-500">
-                      日本語訳
-                    </p>
-                    <p className="mt-1 leading-7 text-stone-700">
-                      {story.japaneseStory}
-                    </p>
-                  </article>
-                );
-              })}
+              <div className="mt-6 space-y-6 border-t border-slate-200 pt-6 text-left">
+                <h3 className="text-base font-extrabold text-slate-900">
+                  Detailed Results
+                </h3>
+                {quizData?.stories.map((story, index) => {
+                  const result = storyResults.find(
+                    (storyResult) => storyResult.storyId === story.storyId,
+                  );
+
+                  return (
+                    <article
+                      key={story.storyId}
+                      className={styles.storyResultCard}
+                    >
+                      <p className="text-xs font-bold" style={{ color: "var(--color-primary-orange)" }}>
+                        Story {index + 1}: {story.title}
+                      </p>
+                      <div className={styles.storyBox}>
+                        {renderStoryContent(story, result?.blanks)}
+                      </div>
+                      <div className={styles.sectionBlock}>
+                        <p className={styles.sectionLabel}>Japanese Translation</p>
+                        <p className={styles.sectionText}>
+                          {story.japaneseStory}
+                        </p>
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
             </div>
-
-            <button
-              type="button"
-              onClick={() => {
-                setQuizData(null);
-                setIsFinished(false);
-                setStoryResults([]);
-                setAnswers({});
-                setIsAnswered(false);
-              }}
-              className="mt-8 w-full rounded-xl border border-stone-300 px-4 py-3 font-bold text-stone-700 transition hover:bg-stone-50"
-            >
-              もう一度挑戦する
-            </button>
           </section>
         )}
       </div>
-    </main>
+    </div>
   );
 }
