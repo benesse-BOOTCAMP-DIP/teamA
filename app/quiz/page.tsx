@@ -148,6 +148,21 @@ function getAcceptedAnswers(word: QuizWord): string[] {
   return Array.from(new Set([word.word, ...word.surfaces]));
 }
 
+function getResultMessage(totalCorrect: number, totalQuestions: number): string {
+  if (totalQuestions === 0) return "Great Job!";
+  const percentage = (totalCorrect / totalQuestions) * 100;
+  if (percentage === 100) {
+    return "Perfect!";
+  }
+  if (percentage >= 80) {
+    return "Great Job!";
+  }
+  if (percentage >= 50) {
+    return "Good Effort!";
+  }
+  return "Keep Practicing!";
+}
+
 function getAnswerValidationError(value: string): string {
   const trimmedValue = value.trim();
 
@@ -475,7 +490,7 @@ export default function QuizPage() {
             <div className={`${styles.folderInner} text-center`}>
               <p className={styles.resultBadge}>QUIZ COMPLETE</p>
               <h2 className="mt-2 text-2xl font-extrabold text-slate-900">
-                Great Job!
+                {getResultMessage(totalCorrect, totalQuestions)}
               </h2>
               <p className={styles.scoreText}>
                 {totalCorrect} / {totalQuestions}
