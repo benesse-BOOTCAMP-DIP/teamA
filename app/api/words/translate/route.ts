@@ -149,6 +149,12 @@ export async function POST(request: Request) {
         { status: 400 },
       );
     }
+    if (body.words.length > 5) {
+      return NextResponse.json(
+        { error: "一度に翻訳できる単語は最大5個までです" },
+        { status: 400 },
+      );
+    }
 
     // 2. 空白の除去と空文字の除外
     const cleanedWords = body.words

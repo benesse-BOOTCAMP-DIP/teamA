@@ -88,6 +88,15 @@ export async function POST(request: Request) {
         { status: 400 },
       );
     }
+    if (body.words.length > 5) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "一度に登録できる単語は最大5個までです",
+        },
+        { status: 400 },
+      );
+    }
 
     const userId = body.userId;
 
